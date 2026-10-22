@@ -1,0 +1,60 @@
+<view class="page">
+  <view class="header">
+    <view class="month-bar">
+      <view class="month-arrow" bindtap="onPrevMonth">‹</view>
+      <view class="month-text">{{monthLabel}}</view>
+      <view class="month-arrow {{canNext ? '' : 'disabled'}}" bindtap="onNextMonth">›</view>
+    </view>
+
+    <view class="overview card">
+      <view class="overview-top">
+        <text class="overview-label">本月结余</text>
+        <text class="overview-value">{{summary.balance}}</text>
+      </view>
+      <view class="overview-split">
+        <view class="split-item">
+          <text class="split-label">收入</text>
+          <text class="split-value income">+{{summary.income}}</text>
+        </view>
+        <view class="split-divider"></view>
+        <view class="split-item">
+          <text class="split-label">支出</text>
+          <text class="split-value expense">-{{summary.expense}}</text>
+        </view>
+      </view>
+    </view>
+  </view>
+
+  <view class="list">
+    <view class="group" wx:for="{{groups}}" wx:key="date">
+      <view class="group-header">
+        <text class="group-date">{{item.dateLabel}} {{item.weekdayLabel}}</text>
+        <text class="group-sum">支出 {{item.expenseText}} · 收入 {{item.incomeText}}</text>
+      </view>
+      <view
+        class="record"
+        wx:for="{{item.items}}"
+        wx:for-item="record"
+        wx:key="id"
+        data-id="{{record.id}}"
+        bindlongpress="onLongPress"
+      >
+        <view class="record-dot" style="background:{{record.color}}"></view>
+        <view class="record-info">
+          <text class="record-category">{{record.category}}</text>
+          <text class="record-note" wx:if="{{record.note}}">{{record.note}}</text>
+        </view>
+        <text class="record-amount {{record.type === 'income' ? 'income' : 'expense'}}">{{record.amountText}}</text>
+      </view>
+    </view>
+
+    <view class="empty" wx:if="{{isEmpty}}">
+      <text class="empty-title">本月还没有记账记录</text>
+      <text class="empty-tip">点击右下角「记一笔」开始记账</text>
+    </view>
+
+    <view class="tip" wx:if="{{!isEmpty}}">长按记录可删除</view>
+  </view>
+
+  <view class="fab" bindtap="onAdd">记一笔</view>
+</view>

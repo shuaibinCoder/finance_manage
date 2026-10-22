@@ -1,0 +1,67 @@
+<view class="page">
+  <view class="month-bar">
+    <view class="month-arrow" bindtap="onPrevMonth">‹</view>
+    <view class="month-text">{{monthLabel}}</view>
+    <view class="month-arrow {{canNext ? '' : 'disabled'}}" bindtap="onNextMonth">›</view>
+  </view>
+
+  <view class="card summary-card">
+    <view class="type-switch">
+      <view
+        class="type-item {{type === 'expense' ? 'active expense' : ''}}"
+        data-type="expense"
+        bindtap="onSwitchType"
+      >支出</view>
+      <view
+        class="type-item {{type === 'income' ? 'active income' : ''}}"
+        data-type="income"
+        bindtap="onSwitchType"
+      >收入</view>
+    </view>
+    <view class="total-row">
+      <text class="total-label">{{type === 'expense' ? '本月支出' : '本月收入'}}</text>
+      <text class="total-value {{type}}">{{total}}</text>
+    </view>
+  </view>
+
+  <view class="card section">
+    <text class="section-title">分类占比</text>
+    <block wx:if="{{!isEmpty}}">
+      <view class="stat-item" wx:for="{{list}}" wx:key="name">
+        <view class="stat-top">
+          <view class="stat-name">
+            <view class="stat-dot" style="background:{{item.color}}"></view>
+            <text>{{item.name}}</text>
+          </view>
+          <view class="stat-value">
+            <text class="stat-amount">{{item.amountText}}</text>
+            <text class="stat-percent">{{item.percentText}}</text>
+          </view>
+        </view>
+        <view class="stat-bar">
+          <view class="stat-bar-inner" style="width:{{item.barWidth}};background:{{item.color}}"></view>
+        </view>
+      </view>
+    </block>
+    <view class="empty" wx:else>
+      <text class="empty-title">本月暂无{{type === 'expense' ? '支出' : '收入'}}数据</text>
+    </view>
+  </view>
+
+  <view class="card section">
+    <text class="section-title">近半年趋势</text>
+    <view class="legend">
+      <view class="legend-item"><view class="legend-dot expense-bg"></view><text>支出</text></view>
+      <view class="legend-item"><view class="legend-dot income-bg"></view><text>收入</text></view>
+    </view>
+    <view class="trend">
+      <view class="trend-col" wx:for="{{trend}}" wx:key="label">
+        <view class="trend-bars">
+          <view class="trend-bar income-bg" style="height:{{item.incomeHeight}}"></view>
+          <view class="trend-bar expense-bg" style="height:{{item.expenseHeight}}"></view>
+        </view>
+        <text class="trend-label">{{item.label}}</text>
+      </view>
+    </view>
+  </view>
+</view>

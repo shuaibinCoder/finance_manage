@@ -1,0 +1,33 @@
+/**app.wxss**/
+page {
+  background: #f5f6fa;
+  color: #1f2733;
+  font-size: 28rpx;
+  font-family: -apple-system, BlinkMacSystemFont, 'Helvetica Neue', 'PingFang SC', sans-serif;
+}
+
+view,
+text,
+input,
+button,
+picker {
+  box-sizing: border-box;
+}
+
+.card {
+  background: #ffffff;
+  border-radius: 24rpx;
+  box-shadow: 0 8rpx 24rpx rgba(31, 39, 51, 0.06);
+}
+
+.muted {
+  color: #9aa0ae;
+}
+
+.income {
+  color: #2ba471;
+}
+
+.expense {
+  color: #e5533d;
+}

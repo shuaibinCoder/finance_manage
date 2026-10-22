@@ -1,0 +1,155 @@
+.page {
+  min-height: 100vh;
+  padding: 24rpx 24rpx 80rpx;
+}
+
+.type-switch {
+  display: flex;
+  background: #ffffff;
+  border-radius: 24rpx;
+  padding: 8rpx;
+  margin-bottom: 24rpx;
+}
+
+.type-item {
+  flex: 1;
+  height: 76rpx;
+  line-height: 76rpx;
+  text-align: center;
+  font-size: 30rpx;
+  font-weight: 600;
+  color: #9aa0ae;
+  border-radius: 18rpx;
+}
+
+.type-item.active {
+  background: #f0f3fe;
+}
+
+.type-item.active.expense {
+  color: #e5533d;
+}
+
+.type-item.active.income {
+  color: #2ba471;
+}
+
+.amount-card {
+  padding: 32rpx;
+}
+
+.amount-row {
+  display: flex;
+  align-items: center;
+}
+
+.amount-symbol {
+  font-size: 40rpx;
+  font-weight: 600;
+  color: #6b7280;
+  margin-right: 12rpx;
+}
+
+.amount-input {
+  flex: 1;
+  height: 80rpx;
+  font-size: 56rpx;
+  font-weight: 700;
+}
+
+.amount-placeholder {
+  font-size: 56rpx;
+  font-weight: 700;
+  color: #d3d6de;
+}
+
+.section {
+  margin-top: 24rpx;
+  padding: 28rpx;
+}
+
+.section-title {
+  font-size: 28rpx;
+  font-weight: 600;
+}
+
+.category-grid {
+  display: flex;
+  flex-wrap: wrap;
+  margin-top: 12rpx;
+}
+
+.category-item {
+  width: 25%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 20rpx 0;
+}
+
+.category-dot {
+  width: 72rpx;
+  height: 72rpx;
+  border-radius: 50%;
+  opacity: 0.35;
+}
+
+.category-item.active .category-dot {
+  opacity: 1;
+  box-shadow: 0 6rpx 16rpx rgba(31, 39, 51, 0.15);
+}
+
+.category-name {
+  margin-top: 10rpx;
+  font-size: 26rpx;
+  color: #6b7280;
+}
+
+.category-item.active .category-name {
+  color: #1f2733;
+  font-weight: 600;
+}
+
+.field {
+  display: flex;
+  align-items: center;
+  height: 96rpx;
+  border-bottom: 2rpx solid #f2f3f7;
+}
+
+.field:last-child {
+  border-bottom: none;
+}
+
+.field-label {
+  width: 140rpx;
+  font-size: 28rpx;
+  color: #6b7280;
+}
+
+.field-value {
+  flex: 1;
+  font-size: 30rpx;
+}
+
+.field-input {
+  flex: 1;
+  font-size: 30rpx;
+}
+
+.field-placeholder {
+  color: #c3c7d1;
+}
+
+.save-btn {
+  margin-top: 48rpx;
+  height: 96rpx;
+  line-height: 96rpx;
+  text-align: center;
+  border-radius: 48rpx;
+  background: #4a6fe5;
+  color: #ffffff;
+  font-size: 32rpx;
+  font-weight: 600;
+  box-shadow: 0 12rpx 28rpx rgba(74, 111, 229, 0.3);
+}

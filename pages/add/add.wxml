@@ -1,0 +1,65 @@
+<view class="page">
+  <view class="type-switch">
+    <view
+      class="type-item {{type === 'expense' ? 'active expense' : ''}}"
+      data-type="expense"
+      bindtap="onSwitchType"
+    >支出</view>
+    <view
+      class="type-item {{type === 'income' ? 'active income' : ''}}"
+      data-type="income"
+      bindtap="onSwitchType"
+    >收入</view>
+  </view>
+
+  <view class="card amount-card">
+    <view class="amount-row">
+      <text class="amount-symbol">¥</text>
+      <input
+        class="amount-input"
+        type="digit"
+        placeholder="0.00"
+        placeholder-class="amount-placeholder"
+        value="{{amount}}"
+        bindinput="onAmountInput"
+      />
+    </view>
+  </view>
+
+  <view class="card section">
+    <text class="section-title">分类</text>
+    <view class="category-grid">
+      <view
+        class="category-item {{category === item.name ? 'active' : ''}}"
+        wx:for="{{categories}}"
+        wx:key="name"
+        data-name="{{item.name}}"
+        bindtap="onSelectCategory"
+      >
+        <view class="category-dot" style="background:{{item.color}}"></view>
+        <text class="category-name">{{item.name}}</text>
+      </view>
+    </view>
+  </view>
+
+  <view class="card section">
+    <picker mode="date" value="{{date}}" bindchange="onDateChange">
+      <view class="field">
+        <text class="field-label">日期</text>
+        <text class="field-value">{{date}}</text>
+      </view>
+    </picker>
+    <view class="field">
+      <text class="field-label">备注</text>
+      <input
+        class="field-input"
+        placeholder="选填，例如：午餐"
+        placeholder-class="field-placeholder"
+        value="{{note}}"
+        bindinput="onNoteInput"
+      />
+    </view>
+  </view>
+
+  <view class="save-btn" bindtap="onSave">保存</view>
+</view>

@@ -1,0 +1,37 @@
+{
+  "pages": [
+    "pages/index/index",
+    "pages/add/add",
+    "pages/stats/stats"
+  ],
+  "window": {
+    "navigationBarBackgroundColor": "#4A6FE5",
+    "navigationBarTitleText": "财务管理",
+    "navigationBarTextStyle": "white",
+    "backgroundColor": "#F5F6FA",
+    "backgroundTextStyle": "light"
+  },
+  "tabBar": {
+    "color": "#9AA0AE",
+    "selectedColor": "#4A6FE5",
+    "backgroundColor": "#FFFFFF",
+    "borderStyle": "white",
+    "list": [
+      {
+        "pagePath": "pages/index/index",
+        "text": "明细"
+      },
+      {
+        "pagePath": "pages/add/add",
+        "text": "记账"
+      },
+      {
+        "pagePath": "pages/stats/stats",
+        "text": "统计"
+      }
+    ]
+  },
+  "style": "v2",
+  "sitemapLocation": "sitemap.json",
+  "lazyCodeLoading": "requiredComponents"
+}
