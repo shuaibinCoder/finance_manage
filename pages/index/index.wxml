@@ -1,60 +1,99 @@
 <view class="page">
-  <view class="header">
-    <view class="month-bar">
-      <view class="month-arrow" bindtap="onPrevMonth">‹</view>
-      <view class="month-text">{{monthLabel}}</view>
-      <view class="month-arrow {{canNext ? '' : 'disabled'}}" bindtap="onNextMonth">›</view>
+  <view class="topbar">
+    <view class="company-block">
+      <text class="company-name">{{companyName}}</text>
+      <text class="company-subtitle">企业经营月报</text>
     </view>
+    <view class="status-pill {{status === 'confirmed' ? 'confirmed' : ''}}">{{statusText}}</view>
+  </view>
 
-    <view class="overview card">
-      <view class="overview-top">
-        <text class="overview-label">本月结余</text>
-        <text class="overview-value">{{summary.balance}}</text>
+  <view class="month-bar">
+    <view class="month-arrow {{canPrev ? '' : 'disabled'}}" bindtap="onPrevMonth">‹</view>
+    <view class="month-center">
+      <text class="month-text">{{monthLabel}}</text>
+      <text class="month-tip">经营概览</text>
+    </view>
+    <view class="month-arrow {{canNext ? '' : 'disabled'}}" bindtap="onNextMonth">›</view>
+  </view>
+
+  <view class="hero-card">
+    <view class="hero-item">
+      <text class="hero-label">营业收入</text>
+      <text class="hero-value">¥{{metrics.revenue}}</text>
+    </view>
+    <view class="hero-divider"></view>
+    <view class="hero-item">
+      <text class="hero-label">净利润</text>
+      <text class="hero-value">¥{{metrics.netProfit}}</text>
+    </view>
+    <view class="hero-ratios">
+      <text>毛利率 {{metrics.grossMargin}}</text>
+      <text>净利率 {{metrics.netMargin}}</text>
+      <text>资产负债率 {{metrics.debtRatio}}</text>
+    </view>
+  </view>
+
+  <view class="quick-grid">
+    <view class="quick-card card">
+      <text class="quick-label">货币资金</text>
+      <text class="quick-value">¥{{metrics.cash}}</text>
+      <text class="quick-desc">现金和银行存款</text>
+    </view>
+    <view class="quick-card card">
+      <text class="quick-label">应收账款</text>
+      <text class="quick-value">¥{{metrics.receivable}}</text>
+      <text class="quick-desc">客户尚未支付</text>
+    </view>
+    <view class="quick-card card">
+      <text class="quick-label">存货金额</text>
+      <text class="quick-value">¥{{metrics.inventory}}</text>
+      <text class="quick-desc">商品和原材料</text>
+    </view>
+    <view class="quick-card card">
+      <text class="quick-label">负债总额</text>
+      <text class="quick-value">¥{{metrics.liabilities}}</text>
+      <text class="quick-desc">短期及长期负债</text>
+    </view>
+  </view>
+
+  <view class="card section" wx:if="{{warningList.length}}">
+    <view class="section-head">
+      <text class="section-title">数据提醒</text>
+      <text class="section-count">{{warningList.length}}项</text>
+    </view>
+    <view class="alert-row" wx:for="{{warningList}}" wx:key="*this">
+      <view class="alert-dot"></view>
+      <text>{{item}}</text>
+    </view>
+  </view>
+
+  <view class="card section">
+    <view class="section-head">
+      <text class="section-title">近六个月趋势</text>
+      <view class="legend">
+        <view class="legend-item"><view class="legend-dot revenue-bg"></view><text>收入</text></view>
+        <view class="legend-item"><view class="legend-dot profit-bg"></view><text>利润</text></view>
       </view>
-      <view class="overview-split">
-        <view class="split-item">
-          <text class="split-label">收入</text>
-          <text class="split-value income">+{{summary.income}}</text>
+    </view>
+    <view class="trend-chart">
+      <view class="trend-col" wx:for="{{trend}}" wx:key="month">
+        <view class="trend-bars">
+          <view class="trend-bar revenue-bg" style="height:{{item.revenueHeight}}"></view>
+          <view class="trend-bar profit-bg" style="height:{{item.profitHeight}}"></view>
         </view>
-        <view class="split-divider"></view>
-        <view class="split-item">
-          <text class="split-label">支出</text>
-          <text class="split-value expense">-{{summary.expense}}</text>
-        </view>
+        <text class="trend-label">{{item.label}}</text>
       </view>
     </view>
   </view>
 
-  <view class="list">
-    <view class="group" wx:for="{{groups}}" wx:key="date">
-      <view class="group-header">
-        <text class="group-date">{{item.dateLabel}} {{item.weekdayLabel}}</text>
-        <text class="group-sum">支出 {{item.expenseText}} · 收入 {{item.incomeText}}</text>
-      </view>
-      <view
-        class="record"
-        wx:for="{{item.items}}"
-        wx:for-item="record"
-        wx:key="id"
-        data-id="{{record.id}}"
-        bindlongpress="onLongPress"
-      >
-        <view class="record-dot" style="background:{{record.color}}"></view>
-        <view class="record-info">
-          <text class="record-category">{{record.category}}</text>
-          <text class="record-note" wx:if="{{record.note}}">{{record.note}}</text>
-        </view>
-        <text class="record-amount {{record.type === 'income' ? 'income' : 'expense'}}">{{record.amountText}}</text>
-      </view>
-    </view>
-
-    <view class="empty" wx:if="{{isEmpty}}">
-      <text class="empty-title">本月还没有记账记录</text>
-      <text class="empty-tip">点击右下角「记一笔」开始记账</text>
-    </view>
-
-    <view class="tip" wx:if="{{!isEmpty}}">长按记录可删除</view>
+  <view class="empty-card card" wx:if="{{!hasData}}">
+    <text class="empty-title">本月尚未填报</text>
+    <text class="empty-desc">填写资产、负债、收入和费用后即可生成财务报表</text>
+    <view class="btn-primary empty-btn" bindtap="onFill">开始填报</view>
   </view>
 
-  <view class="fab" bindtap="onAdd">记一笔</view>
+  <view class="action-row" wx:else>
+    <view class="btn-secondary action-btn" bindtap="onFill">{{status === 'confirmed' ? '查看填报' : '继续填报'}}</view>
+    <view class="btn-primary action-btn" bindtap="onReports">查看报表</view>
+  </view>
 </view>

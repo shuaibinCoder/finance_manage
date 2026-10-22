@@ -1,67 +1,117 @@
 <view class="page">
   <view class="month-bar">
-    <view class="month-arrow" bindtap="onPrevMonth">‹</view>
-    <view class="month-text">{{monthLabel}}</view>
+    <view class="month-arrow {{canPrev ? '' : 'disabled'}}" bindtap="onPrevMonth">‹</view>
+    <view class="month-center">
+      <text class="month-text">{{monthLabel}}</text>
+      <view class="status-pill {{status === 'confirmed' ? 'confirmed' : ''}}">{{statusText}}</view>
+    </view>
     <view class="month-arrow {{canNext ? '' : 'disabled'}}" bindtap="onNextMonth">›</view>
   </view>
 
-  <view class="card summary-card">
-    <view class="type-switch">
-      <view
-        class="type-item {{type === 'expense' ? 'active expense' : ''}}"
-        data-type="expense"
-        bindtap="onSwitchType"
-      >支出</view>
-      <view
-        class="type-item {{type === 'income' ? 'active income' : ''}}"
-        data-type="income"
-        bindtap="onSwitchType"
-      >收入</view>
-    </view>
-    <view class="total-row">
-      <text class="total-label">{{type === 'expense' ? '本月支出' : '本月收入'}}</text>
-      <text class="total-value {{type}}">{{total}}</text>
-    </view>
+  <view class="tabs card">
+    <view class="tab {{activeTab === 'balance' ? 'active' : ''}}" data-tab="balance" bindtap="onSwitchTab">资产负债表</view>
+    <view class="tab {{activeTab === 'profit' ? 'active' : ''}}" data-tab="profit" bindtap="onSwitchTab">利润表</view>
+    <view class="tab {{activeTab === 'analysis' ? 'active' : ''}}" data-tab="analysis" bindtap="onSwitchTab">经营分析</view>
   </view>
 
-  <view class="card section">
-    <text class="section-title">分类占比</text>
-    <block wx:if="{{!isEmpty}}">
-      <view class="stat-item" wx:for="{{list}}" wx:key="name">
-        <view class="stat-top">
-          <view class="stat-name">
-            <view class="stat-dot" style="background:{{item.color}}"></view>
-            <text>{{item.name}}</text>
-          </view>
-          <view class="stat-value">
-            <text class="stat-amount">{{item.amountText}}</text>
-            <text class="stat-percent">{{item.percentText}}</text>
+  <view class="empty card" wx:if="{{!hasData}}">
+    <text class="empty-title">本月暂无财务数据</text>
+    <text class="empty-desc">完成月度填报后，系统会自动生成财务报表</text>
+    <view class="btn-primary empty-btn" bindtap="onFill">开始填报</view>
+  </view>
+
+  <block wx:else>
+    <block wx:if="{{activeTab === 'balance'}}">
+      <view class="report-head card">
+        <text class="report-name">资产负债表</text>
+        <text class="report-unit">单位：人民币元</text>
+        <view class="equation {{balanceTotals.balanced ? 'ok' : 'error'}}">
+          {{balanceTotals.balanced ? '资产 = 负债 + 所有者权益' : '报表不平衡，相差 ¥' + balanceTotals.difference}}
+        </view>
+      </view>
+
+      <view class="report-group card" wx:for="{{balanceGroups}}" wx:for-item="group" wx:key="title">
+        <view class="group-title">{{group.title}}</view>
+        <view class="report-row" wx:for="{{group.rows}}" wx:for-item="row" wx:key="key">
+          <text>{{row.label}}</text>
+          <text class="amount">{{row.amount}}</text>
+        </view>
+        <view class="report-row total-row">
+          <text>{{group.totalLabel}}</text>
+          <text class="amount">{{group.total}}</text>
+        </view>
+      </view>
+
+      <view class="grand-total card">
+        <view class="grand-row"><text>资产总计</text><text>{{balanceTotals.assets}}</text></view>
+        <view class="grand-row"><text>负债总计</text><text>{{balanceTotals.liabilities}}</text></view>
+        <view class="grand-row"><text>所有者权益合计</text><text>{{balanceTotals.equity}}</text></view>
+        <view class="grand-row final"><text>负债和所有者权益总计</text><text>{{balanceTotals.liabilitiesAndEquity}}</text></view>
+      </view>
+    </block>
+
+    <block wx:elif="{{activeTab === 'profit'}}">
+      <view class="profit-hero">
+        <view class="profit-hero-item">
+          <text>营业收入</text>
+          <text class="profit-hero-value">¥{{profitTotals.revenue}}</text>
+        </view>
+        <view class="profit-hero-item">
+          <text>净利润</text>
+          <text class="profit-hero-value {{profitTotals.netProfitNegative ? 'loss' : ''}}">¥{{profitTotals.netProfit}}</text>
+        </view>
+      </view>
+
+      <view class="report-group card">
+        <view class="group-title">利润表项目</view>
+        <view class="report-row {{row.type === 'subtotal' ? 'total-row' : ''}}" wx:for="{{profitRows}}" wx:for-item="row" wx:key="key">
+          <text>{{row.label}}</text>
+          <text class="amount">{{row.amount}}</text>
+        </view>
+      </view>
+
+      <view class="grand-total card">
+        <view class="grand-row"><text>毛利润</text><text>{{profitTotals.grossProfit}}</text></view>
+        <view class="grand-row"><text>营业利润</text><text>{{profitTotals.operatingProfit}}</text></view>
+        <view class="grand-row"><text>利润总额</text><text>{{profitTotals.profitBeforeTax}}</text></view>
+        <view class="grand-row final"><text>净利润</text><text>{{profitTotals.netProfit}}</text></view>
+      </view>
+    </block>
+
+    <block wx:else>
+      <view class="analysis-grid">
+        <view class="analysis-card card" wx:for="{{analysisCards}}" wx:key="label">
+          <text class="analysis-label">{{item.label}}</text>
+          <text class="analysis-value">{{item.value}}</text>
+          <text class="analysis-desc">{{item.desc}}</text>
+        </view>
+      </view>
+
+      <view class="chart-card card">
+        <view class="chart-head">
+          <text class="chart-title">近六个月收入与利润</text>
+          <view class="legend">
+            <view class="legend-item"><view class="legend-dot revenue-bg"></view><text>收入</text></view>
+            <view class="legend-item"><view class="legend-dot profit-bg"></view><text>利润</text></view>
           </view>
         </view>
-        <view class="stat-bar">
-          <view class="stat-bar-inner" style="width:{{item.barWidth}};background:{{item.color}}"></view>
+        <view class="trend-chart">
+          <view class="trend-col" wx:for="{{trend}}" wx:key="month">
+            <view class="trend-bars">
+              <view class="trend-bar revenue-bg" style="height:{{item.revenueHeight}}"></view>
+              <view class="trend-bar profit-bg" style="height:{{item.profitHeight}}"></view>
+            </view>
+            <text class="trend-label">{{item.label}}</text>
+          </view>
+        </view>
+      </view>
+
+      <view class="alert-card card" wx:if="{{alerts.length}}">
+        <text class="chart-title">财务提醒</text>
+        <view class="alert-row" wx:for="{{alerts}}" wx:key="*this">
+          <view class="alert-dot"></view><text>{{item}}</text>
         </view>
       </view>
     </block>
-    <view class="empty" wx:else>
-      <text class="empty-title">本月暂无{{type === 'expense' ? '支出' : '收入'}}数据</text>
-    </view>
-  </view>
-
-  <view class="card section">
-    <text class="section-title">近半年趋势</text>
-    <view class="legend">
-      <view class="legend-item"><view class="legend-dot expense-bg"></view><text>支出</text></view>
-      <view class="legend-item"><view class="legend-dot income-bg"></view><text>收入</text></view>
-    </view>
-    <view class="trend">
-      <view class="trend-col" wx:for="{{trend}}" wx:key="label">
-        <view class="trend-bars">
-          <view class="trend-bar income-bg" style="height:{{item.incomeHeight}}"></view>
-          <view class="trend-bar expense-bg" style="height:{{item.expenseHeight}}"></view>
-        </view>
-        <text class="trend-label">{{item.label}}</text>
-      </view>
-    </view>
-  </view>
+  </block>
 </view>

@@ -1,171 +1,234 @@
-const RECORDS_KEY = 'finance_records_v1'
+const reportUtils = require('./report')
 
-const CATEGORIES = {
-  expense: [
-    { name: '餐饮', color: '#FF7A45' },
-    { name: '交通', color: '#36CFC9' },
-    { name: '购物', color: '#9254DE' },
-    { name: '居住', color: '#597EF7' },
-    { name: '娱乐', color: '#F759AB' },
-    { name: '医疗', color: '#73D13D' },
-    { name: '学习', color: '#FFA940' },
-    { name: '其他', color: '#8C8C8C' }
-  ],
-  income: [
-    { name: '工资', color: '#36CFC9' },
-    { name: '奖金', color: '#FFA940' },
-    { name: '投资', color: '#597EF7' },
-    { name: '兼职', color: '#73D13D' },
-    { name: '红包', color: '#F759AB' },
-    { name: '其他', color: '#8C8C8C' }
-  ]
-}
+const STORAGE_KEY = 'financial_report_mvp_v1'
 
-function pad(n) {
-  return n < 10 ? '0' + n : '' + n
-}
-
-function getRecords() {
-  try {
-    const list = wx.getStorageSync(RECORDS_KEY)
-    return Object.prototype.toString.call(list) === '[object Array]' ? list : []
-  } catch (e) {
-    return []
+function defaultState() {
+  return {
+    version: 1,
+    company: null,
+    activeMonth: reportUtils.currentMonth(),
+    reports: {}
   }
 }
 
-function setRecords(list) {
-  wx.setStorageSync(RECORDS_KEY, list)
+function getState() {
+  try {
+    const state = wx.getStorageSync(STORAGE_KEY)
+    if (!state || Object.prototype.toString.call(state) !== '[object Object]') return defaultState()
+    return Object.assign(defaultState(), state, {
+      reports: state.reports || {}
+    })
+  } catch (error) {
+    return defaultState()
+  }
 }
 
-function addRecord(record) {
-  const list = getRecords()
-  const item = Object.assign({}, record, {
-    id: Date.now() + '_' + Math.floor(Math.random() * 100000),
-    createdAt: Date.now()
+function saveState(state) {
+  wx.setStorageSync(STORAGE_KEY, state)
+  return state
+}
+
+function getCompany() {
+  return getState().company
+}
+
+function setCompany(company) {
+  const state = getState()
+  state.company = Object.assign({}, state.company || {}, company, {
+    id: (state.company && state.company.id) || 'company_' + Date.now(),
+    updatedAt: Date.now()
   })
-  list.push(item)
-  setRecords(list)
-  return item
+  saveState(state)
+  return state.company
 }
 
-function removeRecord(id) {
-  const list = getRecords()
-  const next = list.filter(function (item) { return item.id !== id })
-  setRecords(next)
+function getActiveMonth() {
+  return getState().activeMonth || reportUtils.currentMonth()
+}
+
+function setActiveMonth(month) {
+  const state = getState()
+  state.activeMonth = month
+  saveState(state)
+}
+
+function normalizeReport(saved, month) {
+  const empty = reportUtils.createEmptyReport(month)
+  if (!saved) return empty
+  return Object.assign(empty, saved, {
+    month: month,
+    balance: Object.assign({}, empty.balance, saved.balance || {}),
+    profit: Object.assign({}, empty.profit, saved.profit || {})
+  })
+}
+
+function getReport(month) {
+  const state = getState()
+  return normalizeReport(state.reports[month], month)
+}
+
+function saveReport(report) {
+  const state = getState()
+  const month = report.month
+  const previous = state.reports[month]
+  const next = normalizeReport(report, month)
+  next.updatedAt = Date.now()
+  next.version = previous ? (Number(previous.version) || 1) + 1 : 1
+  state.reports[month] = next
+  state.activeMonth = month
+  saveState(state)
   return next
 }
 
-function formatDate(date) {
-  const d = date || new Date()
-  return d.getFullYear() + '-' + pad(d.getMonth() + 1) + '-' + pad(d.getDate())
+function confirmReport(month) {
+  const report = getReport(month)
+  const validation = reportUtils.validateReport(report)
+  if (!validation.valid) return { success: false, validation: validation }
+  report.status = 'confirmed'
+  report.confirmedAt = Date.now()
+  const saved = saveReport(report)
+  return { success: true, report: saved, validation: validation }
 }
 
-function getCurrentMonth() {
-  return formatDate(new Date()).slice(0, 7)
+function reopenReport(month) {
+  const report = getReport(month)
+  report.status = 'draft'
+  report.confirmedAt = 0
+  return saveReport(report)
 }
 
-function shiftMonth(month, delta) {
-  const parts = String(month || '').split('-')
-  const year = Number(parts[0])
-  const mon = Number(parts[1])
-  const d = new Date(year, mon - 1 + delta, 1)
-  return d.getFullYear() + '-' + pad(d.getMonth() + 1)
+function copyPreviousMonth(month) {
+  const previousMonth = reportUtils.shiftMonth(month, -1)
+  const previous = getReport(previousMonth)
+  if (!hasReport(previousMonth)) return null
+  const copied = reportUtils.createEmptyReport(month)
+  copied.balance = Object.assign({}, previous.balance)
+  copied.profit = Object.assign({}, previous.profit)
+  return saveReport(copied)
 }
 
-function getRecordsByMonth(month) {
-  const list = getRecords().filter(function (item) {
-    return String(item.date || '').slice(0, 7) === month
-  })
-  return list.sort(function (a, b) {
-    if (a.date === b.date) return (b.createdAt || 0) - (a.createdAt || 0)
-    return a.date < b.date ? 1 : -1
-  })
+function hasReport(month) {
+  const state = getState()
+  return Boolean(state.reports[month])
 }
 
-function summarize(list) {
-  let income = 0
-  let expense = 0
-  ;(list || []).forEach(function (item) {
-    const amount = Number(item.amount) || 0
-    if (item.type === 'income') income += amount
-    else expense += amount
-  })
-  return { income: income, expense: expense, balance: income - expense }
-}
-
-function getCategoryStats(list, type) {
-  const map = {}
-  ;(list || []).forEach(function (item) {
-    if (item.type !== type) return
-    const amount = Number(item.amount) || 0
-    map[item.category] = (map[item.category] || 0) + amount
-  })
-  return Object.keys(map).map(function (name) {
-    return { name: name, amount: map[name] }
-  }).sort(function (a, b) { return b.amount - a.amount })
-}
-
-function getMonthlyTrend(months) {
-  return (months || []).map(function (month) {
-    const summary = summarize(getRecordsByMonth(month))
-    return { month: month, income: summary.income, expense: summary.expense }
+function listReports() {
+  const state = getState()
+  return Object.keys(state.reports).sort().reverse().map(function (month) {
+    return normalizeReport(state.reports[month], month)
   })
 }
 
-function getCategoryMeta(type, name) {
-  const list = CATEGORIES[type] || []
-  for (let i = 0; i < list.length; i++) {
-    if (list[i].name === name) return list[i]
+function clearReports() {
+  const state = getState()
+  state.reports = {}
+  state.activeMonth = reportUtils.currentMonth()
+  saveState(state)
+}
+
+function clearAll() {
+  wx.removeStorageSync(STORAGE_KEY)
+}
+
+function exportData() {
+  return JSON.stringify(getState(), null, 2)
+}
+
+function seedDemoData() {
+  const state = getState()
+  if (!state.company) {
+    state.company = {
+      id: 'demo_company',
+      name: '柠月商贸有限公司',
+      industry: '商贸零售',
+      startMonth: reportUtils.shiftMonth(reportUtils.currentMonth(), -5),
+      updatedAt: Date.now()
+    }
   }
-  return { name: name, color: '#8C8C8C' }
-}
 
-function formatMoney(value) {
-  const num = Math.round((Number(value) || 0) * 100) / 100
-  return num.toFixed(2)
-}
-
-function formatMonthLabel(month) {
-  const parts = String(month || '').split('-')
-  if (parts.length !== 2) return month
-  return parts[0] + '年' + Number(parts[1]) + '月'
-}
-
-function formatDateLabel(date) {
-  const parts = String(date || '').split('-')
-  if (parts.length !== 3) return date
-  return Number(parts[1]) + '月' + Number(parts[2]) + '日'
-}
-
-function getWeekdayLabel(date) {
-  const today = formatDate(new Date())
-  if (date === today) return '今天'
-  const yesterday = new Date()
-  yesterday.setDate(yesterday.getDate() - 1)
-  if (date === formatDate(yesterday)) return '昨天'
-  const parts = String(date || '').split('-')
-  if (parts.length !== 3) return ''
-  const week = ['周日', '周一', '周二', '周三', '周四', '周五', '周六']
-  return week[new Date(Number(parts[0]), Number(parts[1]) - 1, Number(parts[2])).getDay()]
+  const current = reportUtils.currentMonth()
+  let retained = 8200000
+  for (let index = 5; index >= 0; index--) {
+    const month = reportUtils.shiftMonth(current, -index)
+    const step = 5 - index
+    const revenue = (180000 + step * 13500) * 100
+    const cost = Math.round(revenue * (0.58 + (step % 2) * 0.02))
+    const selling = (12000 + step * 800) * 100
+    const admin = (18000 + step * 600) * 100
+    const finance = (1800 + step * 150) * 100
+    const taxes = Math.round(revenue * 0.012)
+    const incomeTax = Math.round((revenue - cost - selling - admin - finance - taxes) * 0.1)
+    const report = reportUtils.createEmptyReport(month)
+    report.profit = Object.assign(report.profit, {
+      mainRevenue: revenue,
+      mainCost: cost,
+      taxesAndSurcharges: taxes,
+      sellingExpenses: selling,
+      adminExpenses: admin,
+      financeExpenses: finance,
+      otherIncome: step % 3 === 0 ? 300000 : 0,
+      incomeTax: Math.max(incomeTax, 0)
+    })
+    const netProfit = reportUtils.calculateProfit(report.profit).netProfit
+    retained += netProfit
+    const cash = (98000 + step * 11000) * 100
+    const receivable = (62000 + step * 7000) * 100
+    const inventory = (128000 + step * 5000) * 100
+    const otherCurrent = 1800000
+    const fixed = 26000000 - step * 1200000
+    const otherNonCurrent = 6000000
+    const assets = cash + receivable + inventory + otherCurrent + fixed + otherNonCurrent
+    const shortLoans = 6000000
+    const payable = (72000 + step * 3000) * 100
+    const taxesPayable = 900000
+    const otherCurrentLiabilities = 2200000
+    const longLoans = 8000000
+    const otherNonCurrentLiabilities = 1500000
+    const liabilities = shortLoans + payable + taxesPayable + otherCurrentLiabilities + longLoans + otherNonCurrentLiabilities
+    const paidInCapital = 20000000
+    const otherEquity = 3000000
+    retained = assets - liabilities - paidInCapital - otherEquity
+    report.balance = Object.assign(report.balance, {
+      cash: cash,
+      accountsReceivable: receivable,
+      inventory: inventory,
+      otherCurrentAssets: otherCurrent,
+      fixedAssets: fixed,
+      otherNonCurrentAssets: otherNonCurrent,
+      shortTermLoans: shortLoans,
+      accountsPayable: payable,
+      taxesPayable: taxesPayable,
+      otherCurrentLiabilities: otherCurrentLiabilities,
+      longTermLoans: longLoans,
+      otherNonCurrentLiabilities: otherNonCurrentLiabilities,
+      paidInCapital: paidInCapital,
+      retainedEarnings: retained,
+      otherEquity: otherEquity
+    })
+    report.status = index === 0 ? 'draft' : 'confirmed'
+    report.confirmedAt = report.status === 'confirmed' ? Date.now() : 0
+    state.reports[month] = report
+  }
+  state.activeMonth = current
+  saveState(state)
+  return state
 }
 
 module.exports = {
-  CATEGORIES: CATEGORIES,
-  getRecords: getRecords,
-  setRecords: setRecords,
-  addRecord: addRecord,
-  removeRecord: removeRecord,
-  getRecordsByMonth: getRecordsByMonth,
-  summarize: summarize,
-  getCategoryStats: getCategoryStats,
-  getMonthlyTrend: getMonthlyTrend,
-  getCategoryMeta: getCategoryMeta,
-  formatMoney: formatMoney,
-  formatDate: formatDate,
-  getCurrentMonth: getCurrentMonth,
-  shiftMonth: shiftMonth,
-  formatMonthLabel: formatMonthLabel,
-  formatDateLabel: formatDateLabel,
-  getWeekdayLabel: getWeekdayLabel
+  getState: getState,
+  getCompany: getCompany,
+  setCompany: setCompany,
+  getActiveMonth: getActiveMonth,
+  setActiveMonth: setActiveMonth,
+  getReport: getReport,
+  saveReport: saveReport,
+  confirmReport: confirmReport,
+  reopenReport: reopenReport,
+  copyPreviousMonth: copyPreviousMonth,
+  hasReport: hasReport,
+  listReports: listReports,
+  clearReports: clearReports,
+  clearAll: clearAll,
+  exportData: exportData,
+  seedDemoData: seedDemoData
 }

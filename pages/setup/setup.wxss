@@ -1,0 +1,102 @@
+.page {
+  min-height: 100vh;
+  padding: 48rpx 28rpx 80rpx;
+}
+
+.hero {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 30rpx 20rpx 52rpx;
+}
+
+.logo {
+  width: 112rpx;
+  height: 112rpx;
+  line-height: 112rpx;
+  text-align: center;
+  border-radius: 32rpx;
+  color: #ffffff;
+  font-size: 54rpx;
+  font-weight: 700;
+  background: linear-gradient(135deg, #3157d5, #7590f1);
+  box-shadow: 0 16rpx 30rpx rgba(49, 87, 213, 0.28);
+}
+
+.hero-title {
+  margin-top: 30rpx;
+  font-size: 40rpx;
+  font-weight: 700;
+}
+
+.hero-desc {
+  margin-top: 14rpx;
+  color: #8b93a7;
+  font-size: 26rpx;
+  text-align: center;
+  line-height: 1.6;
+}
+
+.form-card {
+  padding: 8rpx 30rpx;
+}
+
+.field-block {
+  padding: 28rpx 0;
+  border-bottom: 2rpx solid #f0f2f7;
+}
+
+.field-block.no-border {
+  border-bottom: none;
+}
+
+.field-label {
+  display: block;
+  margin-bottom: 18rpx;
+  color: #626b7e;
+  font-size: 25rpx;
+}
+
+.text-input {
+  height: 68rpx;
+  font-size: 31rpx;
+}
+
+.placeholder {
+  color: #c0c5d0;
+}
+
+.picker-value {
+  height: 58rpx;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: 30rpx;
+}
+
+.arrow {
+  color: #a7adba;
+  font-size: 42rpx;
+}
+
+.privacy-tip {
+  margin: 28rpx 10rpx 0;
+  padding: 24rpx;
+  display: flex;
+  flex-direction: column;
+  color: #7c8497;
+  font-size: 24rpx;
+  line-height: 1.65;
+  border-radius: 18rpx;
+  background: #edf1ff;
+}
+
+.privacy-title {
+  margin-bottom: 8rpx;
+  color: #3157d5;
+  font-weight: 600;
+}
+
+.save-btn {
+  margin-top: 40rpx;
+}

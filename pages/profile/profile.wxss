@@ -1,0 +1,192 @@
+.page {
+  min-height: 100vh;
+  padding: 28rpx 24rpx 80rpx;
+}
+
+.company-card {
+  padding: 34rpx 30rpx;
+  display: flex;
+  align-items: center;
+  color: #ffffff;
+  border-radius: 28rpx;
+  background: linear-gradient(135deg, #274cc8, #6f8bf1);
+  box-shadow: 0 16rpx 34rpx rgba(49, 87, 213, 0.25);
+}
+
+.company-logo {
+  width: 88rpx;
+  height: 88rpx;
+  line-height: 88rpx;
+  text-align: center;
+  flex-shrink: 0;
+  border-radius: 24rpx;
+  color: #3157d5;
+  background: #ffffff;
+  font-size: 40rpx;
+  font-weight: 700;
+}
+
+.company-info {
+  flex: 1;
+  min-width: 0;
+  margin-left: 22rpx;
+  display: flex;
+  flex-direction: column;
+}
+
+.company-name {
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  font-size: 32rpx;
+  font-weight: 700;
+}
+
+.company-meta {
+  margin-top: 9rpx;
+  font-size: 22rpx;
+  opacity: 0.78;
+}
+
+.edit-link {
+  padding: 12rpx 0 12rpx 24rpx;
+  font-size: 24rpx;
+}
+
+.stats-card {
+  margin-top: 22rpx;
+  padding: 28rpx 10rpx;
+  display: flex;
+}
+
+.stat-item {
+  width: 33.33%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  border-right: 2rpx solid #f0f2f7;
+}
+
+.stat-item:last-child {
+  border-right: none;
+}
+
+.stat-value {
+  font-size: 38rpx;
+  font-weight: 700;
+}
+
+.stat-label {
+  margin-top: 7rpx;
+  color: #9299aa;
+  font-size: 22rpx;
+}
+
+.section-title {
+  margin: 32rpx 8rpx 14rpx;
+  color: #727b8e;
+  font-size: 25rpx;
+  font-weight: 600;
+}
+
+.menu-card {
+  padding: 0 28rpx;
+}
+
+.menu-row {
+  min-height: 112rpx;
+  display: flex;
+  align-items: center;
+  border-bottom: 2rpx solid #f0f2f7;
+}
+
+.menu-row:last-child {
+  border-bottom: none;
+}
+
+.menu-icon {
+  width: 64rpx;
+  height: 64rpx;
+  line-height: 64rpx;
+  text-align: center;
+  flex-shrink: 0;
+  border-radius: 18rpx;
+  font-size: 25rpx;
+  font-weight: 650;
+}
+
+.demo-icon {
+  color: #3157d5;
+  background: #edf1ff;
+}
+
+.backup-icon {
+  color: #16875d;
+  background: #e8f7f1;
+}
+
+.clear-icon {
+  color: #a26b10;
+  background: #fff6dd;
+}
+
+.reset-icon {
+  color: #d9485f;
+  background: #fff0f2;
+}
+
+.menu-copy {
+  flex: 1;
+  min-width: 0;
+  margin-left: 20rpx;
+  display: flex;
+  flex-direction: column;
+}
+
+.menu-title {
+  font-size: 27rpx;
+}
+
+.menu-desc {
+  margin-top: 6rpx;
+  color: #a0a6b5;
+  font-size: 21rpx;
+}
+
+.menu-arrow {
+  color: #b2b7c2;
+  font-size: 40rpx;
+}
+
+.danger-text {
+  color: #d9485f;
+}
+
+.notice-card {
+  margin-top: 28rpx;
+  padding: 25rpx;
+  display: flex;
+  flex-direction: column;
+  color: #737c90;
+  border-radius: 20rpx;
+  background: #edf1ff;
+}
+
+.notice-title {
+  color: #3157d5;
+  font-size: 25rpx;
+  font-weight: 650;
+}
+
+.notice-content {
+  margin-top: 9rpx;
+  font-size: 22rpx;
+  line-height: 1.65;
+}
+
+.version {
+  margin-top: 38rpx;
+  text-align: center;
+  color: #b0b5c0;
+  font-size: 21rpx;
+}

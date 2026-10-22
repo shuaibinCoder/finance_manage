@@ -1,65 +1,121 @@
 <view class="page">
-  <view class="type-switch">
-    <view
-      class="type-item {{type === 'expense' ? 'active expense' : ''}}"
-      data-type="expense"
-      bindtap="onSwitchType"
-    >支出</view>
-    <view
-      class="type-item {{type === 'income' ? 'active income' : ''}}"
-      data-type="income"
-      bindtap="onSwitchType"
-    >收入</view>
+  <view class="month-bar">
+    <view class="month-arrow {{canPrev ? '' : 'disabled'}}" bindtap="onPrevMonth">‹</view>
+    <view class="month-center">
+      <text class="month-text">{{monthLabel}}</text>
+      <view class="status-pill {{status === 'confirmed' ? 'confirmed' : ''}}">{{statusText}}</view>
+    </view>
+    <view class="month-arrow {{canNext ? '' : 'disabled'}}" bindtap="onNextMonth">›</view>
   </view>
 
-  <view class="card amount-card">
-    <view class="amount-row">
-      <text class="amount-symbol">¥</text>
-      <input
-        class="amount-input"
-        type="digit"
-        placeholder="0.00"
-        placeholder-class="amount-placeholder"
-        value="{{amount}}"
-        bindinput="onAmountInput"
-      />
+  <view class="toolbar card">
+    <view>
+      <text class="toolbar-title">月度财务数据</text>
+      <text class="toolbar-desc">金额单位：人民币元</text>
+    </view>
+    <view class="copy-link {{readonly ? 'disabled-link' : ''}}" bindtap="onCopyPrevious">复制上月</view>
+  </view>
+
+  <view class="locked-tip" wx:if="{{readonly}}">
+    <text>本月月报已确认，当前为只读状态</text>
+    <text class="unlock-link" bindtap="onReopen">撤销确认</text>
+  </view>
+
+  <view class="summary-card card">
+    <view class="summary-item">
+      <text class="summary-label">资产总计</text>
+      <text class="summary-value">¥{{totals.assets}}</text>
+    </view>
+    <view class="summary-item">
+      <text class="summary-label">负债和权益</text>
+      <text class="summary-value">¥{{totals.liabilitiesAndEquity}}</text>
+    </view>
+    <view class="balance-state {{totals.balanced ? 'ok' : 'error'}}">
+      {{totals.balanced ? '资产负债已平衡' : '尚未平衡，相差 ¥' + totals.difference}}
     </view>
   </view>
 
-  <view class="card section">
-    <text class="section-title">分类</text>
-    <view class="category-grid">
-      <view
-        class="category-item {{category === item.name ? 'active' : ''}}"
-        wx:for="{{categories}}"
-        wx:key="name"
-        data-name="{{item.name}}"
-        bindtap="onSelectCategory"
-      >
-        <view class="category-dot" style="background:{{item.color}}"></view>
-        <text class="category-name">{{item.name}}</text>
+  <view class="form-section card" wx:for="{{balanceSections}}" wx:for-item="section" wx:key="key">
+    <view class="form-title-row">
+      <text class="form-title">{{section.title}}</text>
+      <text class="form-tag">资产负债表</text>
+    </view>
+    <view class="amount-field" wx:for="{{section.fields}}" wx:for-item="field" wx:key="key">
+      <view class="field-copy">
+        <text class="field-name">{{field.label}}</text>
+        <text class="field-hint">{{field.hint}}</text>
+      </view>
+      <view class="amount-box">
+        <text class="currency">¥</text>
+        <input
+          class="amount-input"
+          type="{{field.inputType}}"
+          value="{{field.valueText}}"
+          placeholder="0.00"
+          disabled="{{readonly}}"
+          data-group="balance"
+          data-key="{{field.key}}"
+          bindinput="onAmountInput"
+        />
       </view>
     </view>
   </view>
 
-  <view class="card section">
-    <picker mode="date" value="{{date}}" bindchange="onDateChange">
-      <view class="field">
-        <text class="field-label">日期</text>
-        <text class="field-value">{{date}}</text>
+  <view class="profit-summary card">
+    <view class="profit-summary-item">
+      <text>营业收入</text>
+      <text class="profit-number">¥{{totals.revenue}}</text>
+    </view>
+    <view class="profit-summary-item">
+      <text>净利润</text>
+      <text class="profit-number {{totals.netProfitNegative ? 'negative' : 'positive'}}">¥{{totals.netProfit}}</text>
+    </view>
+    <view class="profit-ratio">毛利率 {{totals.grossMargin}} · 净利率 {{totals.netMargin}}</view>
+  </view>
+
+  <view class="form-section card" wx:for="{{profitSections}}" wx:for-item="section" wx:key="key">
+    <view class="form-title-row">
+      <text class="form-title">{{section.title}}</text>
+      <text class="form-tag profit-tag">利润表</text>
+    </view>
+    <view class="amount-field" wx:for="{{section.fields}}" wx:for-item="field" wx:key="key">
+      <view class="field-copy">
+        <text class="field-name">{{field.label}}</text>
+        <text class="field-hint">{{field.hint}}</text>
       </view>
-    </picker>
-    <view class="field">
-      <text class="field-label">备注</text>
-      <input
-        class="field-input"
-        placeholder="选填，例如：午餐"
-        placeholder-class="field-placeholder"
-        value="{{note}}"
-        bindinput="onNoteInput"
-      />
+      <view class="amount-box">
+        <text class="currency">¥</text>
+        <input
+          class="amount-input"
+          type="{{field.inputType}}"
+          value="{{field.valueText}}"
+          placeholder="0.00"
+          disabled="{{readonly}}"
+          data-group="profit"
+          data-key="{{field.key}}"
+          bindinput="onAmountInput"
+        />
+      </view>
     </view>
   </view>
 
-  <view class="save-btn" bindtap="onSave">保存</view>
+  <view class="validation-card card" wx:if="{{errors.length || warnings.length}}">
+    <text class="validation-title">数据检查</text>
+    <view class="validation-row error-row" wx:for="{{errors}}" wx:key="*this">
+      <text class="validation-icon">!</text><text>{{item}}</text>
+    </view>
+    <view class="validation-row warning-row" wx:for="{{warnings}}" wx:key="*this">
+      <text class="validation-icon">i</text><text>{{item}}</text>
+    </view>
+  </view>
+
+  <view class="bottom-actions" wx:if="{{!readonly}}">
+    <view class="btn-secondary bottom-btn" bindtap="onSave">{{saving ? '保存中…' : '保存草稿'}}</view>
+    <view class="btn-primary bottom-btn" bindtap="onConfirm">检查并确认</view>
+  </view>
+
+  <view class="bottom-actions" wx:else>
+    <view class="btn-secondary bottom-btn" bindtap="onReopen">撤销确认</view>
+    <view class="btn-primary bottom-btn" bindtap="onViewReports">查看报表</view>
+  </view>
 </view>

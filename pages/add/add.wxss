@@ -3,153 +3,298 @@
   padding: 24rpx 24rpx 80rpx;
 }
 
-.type-switch {
-  display: flex;
-  background: #ffffff;
-  border-radius: 24rpx;
-  padding: 8rpx;
-  margin-bottom: 24rpx;
-}
-
-.type-item {
-  flex: 1;
-  height: 76rpx;
-  line-height: 76rpx;
-  text-align: center;
-  font-size: 30rpx;
-  font-weight: 600;
-  color: #9aa0ae;
-  border-radius: 18rpx;
-}
-
-.type-item.active {
-  background: #f0f3fe;
-}
-
-.type-item.active.expense {
-  color: #e5533d;
-}
-
-.type-item.active.income {
-  color: #2ba471;
-}
-
-.amount-card {
-  padding: 32rpx;
-}
-
-.amount-row {
+.month-bar {
   display: flex;
   align-items: center;
+  justify-content: center;
+  padding: 6rpx 0 22rpx;
 }
 
-.amount-symbol {
-  font-size: 40rpx;
-  font-weight: 600;
-  color: #6b7280;
-  margin-right: 12rpx;
-}
-
-.amount-input {
-  flex: 1;
-  height: 80rpx;
-  font-size: 56rpx;
-  font-weight: 700;
-}
-
-.amount-placeholder {
-  font-size: 56rpx;
-  font-weight: 700;
-  color: #d3d6de;
-}
-
-.section {
-  margin-top: 24rpx;
-  padding: 28rpx;
-}
-
-.section-title {
-  font-size: 28rpx;
-  font-weight: 600;
-}
-
-.category-grid {
-  display: flex;
-  flex-wrap: wrap;
-  margin-top: 12rpx;
-}
-
-.category-item {
-  width: 25%;
+.month-center {
+  min-width: 300rpx;
   display: flex;
   flex-direction: column;
   align-items: center;
-  padding: 20rpx 0;
 }
 
-.category-dot {
-  width: 72rpx;
-  height: 72rpx;
+.month-text {
+  margin-bottom: 8rpx;
+  font-size: 32rpx;
+  font-weight: 650;
+}
+
+.month-arrow {
+  width: 64rpx;
+  height: 64rpx;
+  line-height: 58rpx;
+  text-align: center;
   border-radius: 50%;
-  opacity: 0.35;
+  color: #3157d5;
+  background: #ffffff;
+  font-size: 42rpx;
 }
 
-.category-item.active .category-dot {
-  opacity: 1;
-  box-shadow: 0 6rpx 16rpx rgba(31, 39, 51, 0.15);
+.month-arrow.disabled {
+  color: #d0d4de;
 }
 
-.category-name {
-  margin-top: 10rpx;
-  font-size: 26rpx;
-  color: #6b7280;
+.toolbar {
+  padding: 26rpx 28rpx;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
 }
 
-.category-item.active .category-name {
-  color: #1f2733;
-  font-weight: 600;
+.toolbar-title {
+  display: block;
+  font-size: 29rpx;
+  font-weight: 650;
 }
 
-.field {
+.toolbar-desc {
+  display: block;
+  margin-top: 6rpx;
+  color: #9aa1b1;
+  font-size: 22rpx;
+}
+
+.copy-link,
+.unlock-link {
+  color: #3157d5;
+  font-size: 25rpx;
+}
+
+.disabled-link {
+  color: #b9bec9;
+}
+
+.locked-tip {
+  margin-top: 18rpx;
+  padding: 20rpx 24rpx;
+  display: flex;
+  justify-content: space-between;
+  color: #4d6a61;
+  font-size: 24rpx;
+  border-radius: 18rpx;
+  background: #e8f7f1;
+}
+
+.summary-card {
+  margin-top: 20rpx;
+  padding: 28rpx;
+  display: flex;
+  flex-wrap: wrap;
+}
+
+.summary-item {
+  width: 50%;
+  display: flex;
+  flex-direction: column;
+}
+
+.summary-item:nth-child(2) {
+  padding-left: 26rpx;
+  border-left: 2rpx solid #eff1f5;
+}
+
+.summary-label {
+  color: #7c8497;
+  font-size: 23rpx;
+}
+
+.summary-value {
+  margin-top: 9rpx;
+  font-size: 32rpx;
+  font-weight: 650;
+}
+
+.balance-state {
+  width: 100%;
+  margin-top: 24rpx;
+  padding-top: 20rpx;
+  border-top: 2rpx solid #f0f2f7;
+  font-size: 23rpx;
+}
+
+.balance-state.ok {
+  color: #16875d;
+}
+
+.balance-state.error {
+  color: #d9485f;
+}
+
+.form-section {
+  margin-top: 22rpx;
+  padding: 0 28rpx;
+}
+
+.form-title-row {
+  height: 86rpx;
   display: flex;
   align-items: center;
-  height: 96rpx;
-  border-bottom: 2rpx solid #f2f3f7;
+  justify-content: space-between;
+  border-bottom: 2rpx solid #f0f2f7;
 }
 
-.field:last-child {
+.form-title {
+  font-size: 29rpx;
+  font-weight: 650;
+}
+
+.form-tag {
+  padding: 7rpx 14rpx;
+  color: #3157d5;
+  font-size: 20rpx;
+  border-radius: 14rpx;
+  background: #edf1ff;
+}
+
+.profit-tag {
+  color: #16875d;
+  background: #e8f7f1;
+}
+
+.amount-field {
+  min-height: 112rpx;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  border-bottom: 2rpx solid #f4f5f8;
+}
+
+.amount-field:last-child {
   border-bottom: none;
 }
 
-.field-label {
-  width: 140rpx;
-  font-size: 28rpx;
-  color: #6b7280;
+.field-copy {
+  max-width: 55%;
+  padding: 20rpx 12rpx 20rpx 0;
+  display: flex;
+  flex-direction: column;
 }
 
-.field-value {
-  flex: 1;
-  font-size: 30rpx;
+.field-name {
+  font-size: 27rpx;
 }
 
-.field-input {
-  flex: 1;
-  font-size: 30rpx;
+.field-hint {
+  margin-top: 6rpx;
+  color: #a0a6b5;
+  font-size: 20rpx;
+  line-height: 1.35;
 }
 
-.field-placeholder {
-  color: #c3c7d1;
+.amount-box {
+  width: 42%;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  padding: 12rpx 16rpx;
+  border-radius: 14rpx;
+  background: #f7f8fb;
 }
 
-.save-btn {
-  margin-top: 48rpx;
-  height: 96rpx;
-  line-height: 96rpx;
-  text-align: center;
-  border-radius: 48rpx;
-  background: #4a6fe5;
-  color: #ffffff;
+.currency {
+  margin-right: 6rpx;
+  color: #8d95a8;
+  font-size: 24rpx;
+}
+
+.amount-input {
+  width: 100%;
+  height: 50rpx;
+  text-align: right;
+  font-size: 27rpx;
+}
+
+.profit-summary {
+  margin-top: 22rpx;
+  padding: 28rpx;
+  display: flex;
+  flex-wrap: wrap;
+}
+
+.profit-summary-item {
+  width: 50%;
+  display: flex;
+  flex-direction: column;
+  color: #788094;
+  font-size: 23rpx;
+}
+
+.profit-number {
+  margin-top: 8rpx;
+  color: #172033;
   font-size: 32rpx;
-  font-weight: 600;
-  box-shadow: 0 12rpx 28rpx rgba(74, 111, 229, 0.3);
+  font-weight: 650;
+}
+
+.profit-ratio {
+  width: 100%;
+  margin-top: 22rpx;
+  padding-top: 18rpx;
+  color: #7c8497;
+  font-size: 22rpx;
+  border-top: 2rpx solid #f0f2f7;
+}
+
+.validation-card {
+  margin-top: 22rpx;
+  padding: 28rpx;
+}
+
+.validation-title {
+  font-size: 29rpx;
+  font-weight: 650;
+}
+
+.validation-row {
+  display: flex;
+  align-items: flex-start;
+  margin-top: 18rpx;
+  font-size: 24rpx;
+  line-height: 1.5;
+}
+
+.validation-icon {
+  width: 34rpx;
+  height: 34rpx;
+  margin-right: 12rpx;
+  line-height: 34rpx;
+  text-align: center;
+  flex-shrink: 0;
+  border-radius: 50%;
+  font-size: 21rpx;
+}
+
+.error-row {
+  color: #b93950;
+}
+
+.error-row .validation-icon {
+  color: #ffffff;
+  background: #d9485f;
+}
+
+.warning-row {
+  color: #9a6912;
+}
+
+.warning-row .validation-icon {
+  color: #ffffff;
+  background: #e6a12a;
+}
+
+.bottom-actions {
+  display: flex;
+  margin-top: 32rpx;
+}
+
+.bottom-btn {
+  flex: 1;
+}
+
+.bottom-btn + .bottom-btn {
+  margin-left: 18rpx;
 }

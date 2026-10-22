@@ -1,7 +1,7 @@
-/**app.wxss**/
 page {
-  background: #f5f6fa;
-  color: #1f2733;
+  min-height: 100%;
+  background: #f4f6fa;
+  color: #172033;
   font-size: 28rpx;
   font-family: -apple-system, BlinkMacSystemFont, 'Helvetica Neue', 'PingFang SC', sans-serif;
 }
@@ -10,24 +10,72 @@ view,
 text,
 input,
 button,
-picker {
+picker,
+scroll-view {
   box-sizing: border-box;
 }
 
 .card {
   background: #ffffff;
   border-radius: 24rpx;
-  box-shadow: 0 8rpx 24rpx rgba(31, 39, 51, 0.06);
+  box-shadow: 0 8rpx 26rpx rgba(32, 48, 88, 0.06);
 }
 
 .muted {
-  color: #9aa0ae;
+  color: #8b93a7;
 }
 
-.income {
-  color: #2ba471;
+.primary {
+  color: #3157d5;
 }
 
-.expense {
-  color: #e5533d;
+.positive {
+  color: #16875d;
+}
+
+.negative {
+  color: #d9485f;
+}
+
+.status-pill {
+  display: inline-flex;
+  align-items: center;
+  height: 44rpx;
+  padding: 0 18rpx;
+  border-radius: 22rpx;
+  font-size: 22rpx;
+  color: #8b93a7;
+  background: #eef1f7;
+}
+
+.status-pill.confirmed {
+  color: #16875d;
+  background: #e8f7f1;
+}
+
+.btn-primary,
+.btn-secondary,
+.btn-danger {
+  height: 88rpx;
+  line-height: 88rpx;
+  text-align: center;
+  border-radius: 20rpx;
+  font-size: 30rpx;
+  font-weight: 600;
+}
+
+.btn-primary {
+  color: #ffffff;
+  background: #3157d5;
+  box-shadow: 0 10rpx 24rpx rgba(49, 87, 213, 0.25);
+}
+
+.btn-secondary {
+  color: #3157d5;
+  background: #edf1ff;
+}
+
+.btn-danger {
+  color: #d9485f;
+  background: #fff0f2;
 }

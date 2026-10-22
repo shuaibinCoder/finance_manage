@@ -1,2 +1,5 @@
-// app.js
-App({})
+App({
+  globalData: {
+    appName: '小微财报'
+  }
+})
