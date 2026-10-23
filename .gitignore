@@ -1,0 +1,13 @@
+# Dependencies are restored from package-lock.json
+node_modules/
+
+# macOS
+.DS_Store
+
+# Logs
+*.log
+npm-debug.log*
+
+# Local environment files
+.env
+.env.*
