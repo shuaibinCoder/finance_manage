@@ -16,10 +16,17 @@ Page({
     errors: [],
     warnings: [],
     saving: false,
-    loading: true
+    loading: true,
+    role: '',
+    roleLabel: '',
+    canEdit: false,
+    canApprove: false,
+    canReopen: false,
+    returnReason: ''
   },
 
-  onLoad: function () {
+  onLoad: function (options) {
+    this.launchMonth = options && options.month || ''
     this.report = null
     this.company = null
     this.dirty = false
@@ -27,12 +34,20 @@ Page({
 
   onShow: async function () {
     try {
-      this.company = await repository.getCompany()
+      const session = await repository.getSession()
+      this.company = session.company
+      this.membership = session.membership
       if (!this.company) {
         wx.redirectTo({ url: '/pages/setup/setup' })
         return
       }
-      await this.loadMonth(repository.getActiveMonth())
+      let month = repository.getActiveMonth()
+      if (/^\d{4}-(0[1-9]|1[0-2])$/.test(this.launchMonth)) {
+        month = this.launchMonth
+        repository.setActiveMonth(month)
+        this.launchMonth = ''
+      }
+      await this.loadMonth(month)
     } catch (error) {
       this.setData({ loading: false })
       wx.showToast({ title: error.message || '数据加载失败', icon: 'none' })
@@ -53,14 +68,30 @@ Page({
     this.dirty = false
     const validation = reportUtils.validateReport(this.report)
     const hasData = Boolean(this.report._exists)
+    const role = this.membership && this.membership.role || 'viewer'
+    const canEdit = (role === 'owner' || role === 'finance') && (this.report.status === 'draft' || this.report.status === 'returned')
+    const canApprove = (role === 'owner' || role === 'boss') && this.report.status === 'pending_confirmation'
+    const canReopen = (role === 'owner' || role === 'finance') && this.report.status === 'confirmed'
+    const statusText = {
+      draft: hasData ? '填写中' : '未填报',
+      returned: '已退回',
+      pending_confirmation: '待确认',
+      confirmed: '已确认'
+    }[this.report.status] || '未填报'
     this.setData({
       month: month,
       monthLabel: reportUtils.monthLabel(month),
       canPrev: month > this.company.startMonth,
       canNext: month < reportUtils.currentMonth(),
       status: this.report.status,
-      statusText: this.report.status === 'confirmed' ? '已确认' : (hasData ? '填写中' : '未填报'),
-      readonly: this.report.status === 'confirmed',
+      statusText: statusText,
+      readonly: !canEdit,
+      role: role,
+      roleLabel: this.membership && this.membership.roleLabel || '',
+      canEdit: canEdit,
+      canApprove: canApprove,
+      canReopen: canReopen,
+      returnReason: this.report.returnReason || '',
       balanceSections: reportUtils.buildInputSections(reportUtils.BALANCE_SECTIONS, this.report.balance),
       profitSections: reportUtils.buildInputSections(reportUtils.PROFIT_SECTIONS, this.report.profit),
       totals: this.formatTotals(validation.metrics),
@@ -108,7 +139,7 @@ Page({
   },
 
   onSave: async function () {
-    if (this.data.readonly || this.data.saving) return
+    if (!this.data.canEdit || this.data.saving) return
     this.setData({ saving: true })
     try {
       this.report = await repository.saveReport(this.report)
@@ -121,19 +152,19 @@ Page({
     }
   },
 
-  onConfirm: async function () {
-    if (this.data.readonly || this.data.saving) return
+  onSubmit: async function () {
+    if (!this.data.canEdit || this.data.saving) return
     this.setData({ saving: true })
     try {
       if (this.dirty || !this.report._exists) {
         this.report = await repository.saveReport(this.report)
         this.dirty = false
       }
-      const result = await repository.confirmReport(this.data.month, this.report.version)
+      const result = await repository.submitReport(this.data.month, this.report.version)
       if (!result.success) {
         this.setData({ saving: false, errors: result.validation.errors, warnings: result.validation.warnings })
         wx.showModal({
-          title: '暂时无法确认',
+          title: '暂时无法提交',
           content: result.validation.errors.join('\n'),
           showCancel: false,
           confirmText: '返回修改'
@@ -142,12 +173,52 @@ Page({
       }
       this.report = result.report
       await this.loadMonth(this.data.month)
+      const notification = result.notification
+      const toastTitle = notification && notification.sent > 0 ? '已提交并通知老板' : '已提交，老板未开启提醒'
+      wx.showToast({ title: toastTitle, icon: 'none' })
+    } catch (error) {
+      wx.showToast({ title: error.message || '提交失败，请重试', icon: 'none' })
+    } finally {
       this.setData({ saving: false })
+    }
+  },
+
+  onApprove: async function () {
+    if (!this.data.canApprove || this.data.saving) return
+    this.setData({ saving: true })
+    try {
+      const result = await repository.confirmReport(this.data.month, this.report.version)
+      if (!result.success) throw new Error('月报校验未通过')
+      this.report = result.report
+      await this.loadMonth(this.data.month)
       wx.showToast({ title: '月报已确认', icon: 'success' })
     } catch (error) {
+      wx.showToast({ title: error.message || '确认失败', icon: 'none' })
+    } finally {
       this.setData({ saving: false })
-      wx.showToast({ title: error.message || '确认失败，请重试', icon: 'none' })
     }
+  },
+
+  onReturn: function () {
+    if (!this.data.canApprove) return
+    const page = this
+    wx.showModal({
+      title: '退回月报',
+      editable: true,
+      placeholderText: '请输入需要修改的原因',
+      confirmText: '确认退回',
+      confirmColor: '#d9485f',
+      success: async function (result) {
+        if (!result.confirm) return
+        try {
+          page.report = await repository.returnReport(page.data.month, page.report.version, result.content)
+          await page.loadMonth(page.data.month)
+          wx.showToast({ title: '已退回修改', icon: 'success' })
+        } catch (error) {
+          wx.showToast({ title: error.message || '退回失败', icon: 'none' })
+        }
+      }
+    })
   },
 
   onReopen: function () {
@@ -169,7 +240,7 @@ Page({
   },
 
   onCopyPrevious: function () {
-    if (this.data.readonly) return
+    if (!this.data.canEdit) return
     const previousMonth = reportUtils.shiftMonth(this.data.month, -1)
     const page = this
     wx.showModal({

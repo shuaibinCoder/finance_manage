@@ -86,11 +86,14 @@ cloudfunctions/report-service/
 在云开发控制台创建以下集合：
 
 ```text
+users
 companies
 company_members
 monthly_reports
 report_versions
 audit_logs
+company_invites
+notification_preferences
 ```
 
 小程序客户端不直接访问数据库，正式环境建议关闭客户端对这些集合的直接读写权限，所有操作都经过云函数。
@@ -106,3 +109,49 @@ cloudfunctions/report-service
 选择“上传并部署：云端安装依赖”。
 
 云函数部署完成后，打开小程序“我的”，点击“检测连接”。
+
+
+## 微信协作 P0
+
+当前版本增加：
+
+- CloudBase `OPENID` 静默身份识别，不需要手机号或验证码登录
+- 企业内部成员资料（头像和成员姓名）
+- 企业成员列表与角色管理
+- 财务人员、老板、查看者权限
+- 一次性微信分享邀请
+- 邀请预览和确认加入
+- 月报草稿、提交待确认、退回修改、确认完成状态流
+- 订阅消息授权页面和模板 ID 配置入口
+
+订阅消息模板 ID 配置位于：
+
+```text
+config/env.js
+```
+
+只有在微信公众平台申请模板并填写模板 ID 后，消息提醒页面才会实际发起订阅授权。当前版本没有配置真实模板 ID，也不会发送虚假或未经授权的消息。
+
+
+## 已配置的订阅消息模板
+
+“月报待确认”已配置为微信公共模板“待办事项提醒”：
+
+```text
+模板 ID：jktcPoH8S6Y8OQ2WzI_3vi-8ezkoic-Sz03wFytT4Ew
+公司名称：thing28
+事项主题：thing1
+事项时间：time2
+备注消息：thing12
+员工姓名：thing14
+```
+
+发送流程：
+
+1. 老板或企业管理员在“我的 → 消息提醒”中开启“月报待确认”。
+2. 财务人员提交月报。
+3. `report-service` 查找企业内的老板和管理员。
+4. 对仍有一次性订阅授权的成员发送待办提醒。
+5. 发送成功后，该次授权标记为已使用，成员可以再次主动开启下一次提醒。
+
+当前云函数的 `miniprogramState` 为 `developer`，用于开发版联调。发布正式版前，需要将 `cloudfunctions/report-service/subscription-config.js` 改为 `formal` 并重新部署云函数。

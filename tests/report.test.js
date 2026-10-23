@@ -29,6 +29,8 @@ store.saveReport(report)
 const validation = reportUtils.validateReport(store.getReport('2026-10'))
 assert(validation.valid, '平衡的月报应通过校验')
 assert(validation.metrics.profit.netProfit === 150000, '净利润计算错误')
+assert(store.submitReport('2026-10').success, '月报提交失败')
+assert(store.getReport('2026-10').status === 'pending_confirmation', '待确认状态错误')
 assert(store.confirmReport('2026-10').success, '月报确认失败')
 assert(store.getReport('2026-10').status === 'confirmed', '月报状态错误')
 

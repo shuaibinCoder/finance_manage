@@ -1,0 +1,36 @@
+<view class="page">
+  <view class="title-block">
+    <text class="page-title">邀请微信好友加入企业</text>
+    <text class="page-desc">对方打开分享卡片后确认加入，不需要注册账号或输入手机号。</text>
+  </view>
+
+  <view class="card role-card">
+    <text class="section-title">选择成员角色</text>
+    <view class="role-option {{selectedRole === item.value ? 'active' : ''}}" wx:for="{{roles}}" wx:key="value" data-role="{{item.value}}" bindtap="onSelectRole">
+      <view class="radio"><view class="radio-inner" wx:if="{{selectedRole === item.value}}"></view></view>
+      <view class="role-copy">
+        <text class="role-label">{{item.label}}</text>
+        <text class="role-desc">{{item.desc}}</text>
+      </view>
+    </view>
+  </view>
+
+  <view class="card valid-card">
+    <text class="field-label">邀请有效期</text>
+    <picker range="{{validOptions}}" range-key="label" value="{{validIndex}}" bindchange="onValidChange">
+      <view class="picker-value">{{validOptions[validIndex].label}} <text>›</text></view>
+    </picker>
+  </view>
+
+  <view class="btn-primary create-btn" bindtap="onCreate">{{creating ? '生成中…' : '生成微信邀请'}}</view>
+
+  <view class="result-card card" wx:if="{{invite}}">
+    <view class="success-icon">✓</view>
+    <text class="result-title">邀请已准备好</text>
+    <text class="result-desc">企业：{{invite.companyName}}</text>
+    <text class="result-desc">角色：{{invite.roleLabel}}</text>
+    <text class="result-desc">有效至：{{invite.expiresText}}</text>
+    <button class="share-button" open-type="share">发送给微信好友</button>
+    <text class="security-tip">邀请仅可使用一次，过期或使用后自动失效。</text>
+  </view>
+</view>

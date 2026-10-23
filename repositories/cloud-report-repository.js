@@ -5,7 +5,9 @@ const BUSINESS_CODES = [
   'INVALID_MONTH', 'INVALID_COMPANY', 'FORBIDDEN', 'UNAUTHORIZED',
   'COMPANY_REQUIRED', 'VERSION_CONFLICT', 'REPORT_LOCKED',
   'REPORT_NOT_FOUND', 'REPORT_INVALID', 'PREVIOUS_REPORT_NOT_FOUND',
-  'NO_LOCAL_DATA'
+  'NO_LOCAL_DATA', 'INVALID_PROFILE', 'INVALID_ROLE', 'INVITE_NOT_FOUND',
+  'INVITE_EXPIRED', 'INVITE_USED', 'ALREADY_IN_COMPANY', 'MEMBER_NOT_FOUND',
+  'OWNER_PROTECTED', 'INVALID_STATUS', 'RETURN_REASON_REQUIRED'
 ]
 
 function cloudError(code, message, details) {
@@ -54,6 +56,47 @@ function normalizeReport(saved, month) {
   })
 }
 
+
+function getSession() {
+  return call('getSession')
+}
+
+function saveUserProfile(profile) {
+  return call('saveUserProfile', { profile: profile })
+}
+
+function listMembers() {
+  return call('listMembers')
+}
+
+function updateMemberRole(memberId, role) {
+  return call('updateMemberRole', { memberId: memberId, role: role })
+}
+
+function removeMember(memberId) {
+  return call('removeMember', { memberId: memberId })
+}
+
+function createInvite(role, validHours) {
+  return call('createInvite', { role: role, validHours: validHours })
+}
+
+function getInvitePreview(token) {
+  return call('getInvitePreview', { token: token })
+}
+
+function acceptInvite(token) {
+  return call('acceptInvite', { token: token })
+}
+
+function getNotificationPreferences() {
+  return call('getNotificationPreferences')
+}
+
+function saveNotificationPreferences(preferences) {
+  return call('saveNotificationPreferences', { preferences: preferences })
+}
+
 function getCompany() {
   return call('getCompany')
 }
@@ -83,6 +126,24 @@ function saveReport(report) {
   }).then(function (saved) {
     return normalizeReport(saved, saved.month)
   })
+}
+
+
+function submitReport(month, expectedVersion) {
+  return call('submitReport', { month: month, expectedVersion: expectedVersion })
+    .then(function (result) {
+      return {
+        success: true,
+        report: normalizeReport(result.report, month),
+        validation: result.validation,
+        notification: result.notification || null
+      }
+    })
+}
+
+function returnReport(month, expectedVersion, reason) {
+  return call('returnReport', { month: month, expectedVersion: expectedVersion, reason: reason })
+    .then(function (saved) { return normalizeReport(saved, month) })
 }
 
 function confirmReport(month, expectedVersion) {
@@ -133,11 +194,23 @@ function ping() {
 }
 
 module.exports = {
+  getSession: getSession,
+  saveUserProfile: saveUserProfile,
+  listMembers: listMembers,
+  updateMemberRole: updateMemberRole,
+  removeMember: removeMember,
+  createInvite: createInvite,
+  getInvitePreview: getInvitePreview,
+  acceptInvite: acceptInvite,
+  getNotificationPreferences: getNotificationPreferences,
+  saveNotificationPreferences: saveNotificationPreferences,
   getCompany: getCompany,
   saveCompany: saveCompany,
   getReport: getReport,
   listReports: listReports,
   saveReport: saveReport,
+  submitReport: submitReport,
+  returnReport: returnReport,
   confirmReport: confirmReport,
   reopenReport: reopenReport,
   copyPreviousMonth: copyPreviousMonth,

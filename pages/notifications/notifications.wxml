@@ -1,0 +1,26 @@
+<view class="page">
+  <view class="intro-card card">
+    <text class="intro-title">微信订阅提醒</text>
+    <text class="intro-desc">订阅消息必须由你主动授权。系统不会自动获取手机号，也不会发送短信。</text>
+  </view>
+
+  <view class="list-card card">
+    <view class="notice-row" wx:for="{{items}}" wx:key="key">
+      <view class="notice-copy">
+        <text class="notice-label">{{item.label}}</text>
+        <text class="notice-desc">{{item.desc}}</text>
+        <text class="notice-state" wx:if="{{item.status === 'accept'}}">已授权</text>
+        <text class="notice-state consumed" wx:elif="{{item.status === 'consumed'}}">本次授权已使用，请重新开启</text>
+        <text class="notice-state rejected" wx:elif="{{item.status}}">未授权</text>
+        <text class="notice-state pending" wx:elif="{{!item.configured}}">模板待配置</text>
+      </view>
+      <view class="subscribe-button {{item.status === 'accept' ? 'done' : ''}}" data-key="{{item.key}}" bindtap="onSubscribe">
+        {{item.status === 'accept' ? '已开启' : '开启'}}
+      </view>
+    </view>
+  </view>
+
+  <view class="guide-card">
+    管理员需要先在微信公众平台配置订阅消息模板。配置模板 ID 后，此页面无需改代码即可请求用户授权。
+  </view>
+</view>

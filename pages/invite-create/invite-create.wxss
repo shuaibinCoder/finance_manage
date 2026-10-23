@@ -1,0 +1,26 @@
+.page { min-height: 100vh; padding: 32rpx 24rpx 80rpx; }
+.title-block { padding: 10rpx 8rpx 30rpx; }
+.page-title, .page-desc { display: block; }
+.page-title { font-size: 36rpx; font-weight: 700; }
+.page-desc { margin-top: 12rpx; color: #8b93a7; font-size: 24rpx; line-height: 1.6; }
+.role-card { padding: 28rpx; }
+.section-title { display: block; margin-bottom: 16rpx; font-size: 28rpx; font-weight: 650; }
+.role-option { margin-top: 14rpx; padding: 22rpx; display: flex; align-items: center; border: 2rpx solid #eef0f5; border-radius: 18rpx; }
+.role-option.active { border-color: #3157d5; background: #f5f7ff; }
+.radio { width: 34rpx; height: 34rpx; display: flex; align-items: center; justify-content: center; flex-shrink: 0; border: 3rpx solid #c4c9d3; border-radius: 50%; }
+.role-option.active .radio { border-color: #3157d5; }
+.radio-inner { width: 18rpx; height: 18rpx; border-radius: 50%; background: #3157d5; }
+.role-copy { margin-left: 18rpx; display: flex; flex-direction: column; }
+.role-label { font-size: 28rpx; font-weight: 600; }
+.role-desc { margin-top: 6rpx; color: #9299aa; font-size: 22rpx; }
+.valid-card { margin-top: 22rpx; padding: 28rpx; display: flex; align-items: center; justify-content: space-between; }
+.field-label { color: #626b7e; }
+.picker-value { color: #3157d5; }
+.create-btn { margin-top: 28rpx; }
+.result-card { margin-top: 24rpx; padding: 38rpx 28rpx; display: flex; flex-direction: column; align-items: center; }
+.success-icon { width: 80rpx; height: 80rpx; line-height: 80rpx; text-align: center; color: #fff; border-radius: 50%; background: #16875d; font-size: 40rpx; }
+.result-title { margin-top: 20rpx; font-size: 31rpx; font-weight: 700; }
+.result-desc { margin-top: 9rpx; color: #737c90; font-size: 23rpx; }
+.share-button { width: 100%; height: 88rpx; margin-top: 28rpx; line-height: 88rpx; color: #fff; border-radius: 20rpx; background: #3157d5; font-size: 29rpx; }
+.share-button::after { border: none; }
+.security-tip { margin-top: 18rpx; color: #a0a6b5; font-size: 21rpx; }

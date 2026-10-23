@@ -9,6 +9,36 @@
   </view>
 
 
+  <view class="user-card card" bindtap="onUserProfile">
+    <image class="user-avatar" wx:if="{{user.avatarFileId}}" src="{{user.avatarFileId}}" mode="aspectFill"></image>
+    <view class="user-avatar user-avatar-empty" wx:else>{{userInitial}}</view>
+    <view class="user-copy">
+      <text class="user-name">{{user.displayName || '微信用户'}}</text>
+      <text class="user-role">{{roleLabel}} · 微信身份已验证</text>
+    </view>
+    <text class="menu-arrow">›</text>
+  </view>
+
+  <view class="section-title">企业协作</view>
+  <view class="menu-card card">
+    <view class="menu-row" bindtap="onMembers">
+      <view class="menu-icon member-icon">员</view>
+      <view class="menu-copy">
+        <text class="menu-title">企业成员</text>
+        <text class="menu-desc">邀请财务、老板和查看者协作</text>
+      </view>
+      <text class="menu-arrow">›</text>
+    </view>
+    <view class="menu-row" bindtap="onNotifications">
+      <view class="menu-icon notice-icon">信</view>
+      <view class="menu-copy">
+        <text class="menu-title">消息提醒</text>
+        <text class="menu-desc">月报提交、退回和确认通知</text>
+      </view>
+      <text class="menu-arrow">›</text>
+    </view>
+  </view>
+
   <view class="cloud-card card">
     <view class="cloud-head">
       <view class="cloud-status-block">
@@ -84,5 +114,5 @@
     <text class="notice-content">当前版本已接入 CloudBase Repository。云端不可用时会自动切换到本地兜底模式；云函数部署并创建数据库集合后，可启用跨设备云端数据。</text>
   </view>
 
-  <view class="version">小微财报 MVP 1.0</view>
+  <view class="version">小微财报 协作版 1.1</view>
 </view>

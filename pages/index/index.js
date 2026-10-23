@@ -53,7 +53,7 @@ Page({
       canPrev: month > company.startMonth,
       canNext: month < reportUtils.currentMonth(),
       status: report.status,
-      statusText: report.status === 'confirmed' ? '已确认' : (hasData ? '填写中' : '未填报'),
+      statusText: { draft: hasData ? '填写中' : '未填报', returned: '已退回', pending_confirmation: '待确认', confirmed: '已确认' }[report.status] || '未填报',
       hasData: hasData,
       metrics: {
         revenue: reportUtils.formatMoneyFromCents(metrics.profit.revenue, false),

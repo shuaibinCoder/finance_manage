@@ -1,0 +1,35 @@
+<view class="page">
+  <view class="loading" wx:if="{{loading}}">正在验证微信邀请…</view>
+
+  <view class="error-card card" wx:elif="{{error}}">
+    <view class="error-icon">!</view>
+    <text class="error-title">无法使用此邀请</text>
+    <text class="error-desc">{{error}}</text>
+    <view class="btn-secondary home-btn" bindtap="onHome">返回首页</view>
+  </view>
+
+  <view wx:else>
+    <view class="invite-card">
+      <view class="company-icon">财</view>
+      <text class="invite-label">邀请你加入</text>
+      <text class="company-name">{{invite.companyName}}</text>
+      <text class="company-industry">{{invite.industry}}</text>
+    </view>
+
+    <view class="card detail-card">
+      <view class="detail-row"><text>你的角色</text><text class="detail-value">{{invite.roleLabel}}</text></view>
+      <view class="detail-row"><text>微信身份</text><text class="detail-value">已安全验证</text></view>
+      <view class="detail-row"><text>成员姓名</text><text class="detail-value">{{user.displayName}}</text></view>
+    </view>
+
+    <view class="permission-card card">
+      <text class="permission-title">加入后可以</text>
+      <text wx:if="{{invite.role === 'finance'}}">填写、修改并提交企业月报</text>
+      <text wx:elif="{{invite.role === 'boss'}}">查看、退回并确认企业月报</text>
+      <text wx:else>只读查看企业财务报表</text>
+    </view>
+
+    <view class="btn-primary join-btn" bindtap="onJoin">{{joining ? '加入中…' : '确认加入企业'}}</view>
+    <text class="join-tip">确认后，此微信账号将成为该企业成员。</text>
+  </view>
+</view>

@@ -298,3 +298,32 @@
 .bottom-btn + .bottom-btn {
   margin-left: 18rpx;
 }
+
+.workflow-tip {
+  margin-top: 18rpx;
+  padding: 22rpx 24rpx;
+  display: flex;
+  flex-direction: column;
+  border-radius: 18rpx;
+}
+
+.returned-tip {
+  color: #9a6912;
+  background: #fff6dd;
+}
+
+.pending-tip {
+  color: #3157d5;
+  background: #edf1ff;
+}
+
+.workflow-title {
+  font-size: 25rpx;
+  font-weight: 650;
+}
+
+.workflow-desc {
+  margin-top: 7rpx;
+  font-size: 22rpx;
+  line-height: 1.5;
+}

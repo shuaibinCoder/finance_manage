@@ -32,6 +32,77 @@ function invoke(remoteCall, localCall) {
   })
 }
 
+
+function getSession() {
+  return invoke(function () {
+    return cloud.getSession().then(function (session) {
+      if (session.company) local.cacheCompany(session.company)
+      if (session.user) local.cacheUser(session.user)
+      return session
+    })
+  }, function () {
+    return local.getSession()
+  })
+}
+
+function saveUserProfile(profile) {
+  return invoke(function () {
+    return cloud.saveUserProfile(profile).then(function (user) {
+      local.saveUserProfile(user)
+      return user
+    })
+  }, function () {
+    return local.saveUserProfile(profile)
+  })
+}
+
+function listMembers() {
+  return invoke(function () { return cloud.listMembers() }, function () { return local.listMembers() })
+}
+
+function collaborationOnly(remoteCall) {
+  return Promise.resolve().then(remoteCall).catch(function (error) {
+    if (isBusinessError(error)) throw error
+    markCloudFailure(error)
+    const wrapped = new Error('企业协作功能需要可用的云端环境')
+    wrapped.code = 'CLOUD_REQUIRED'
+    throw wrapped
+  })
+}
+
+function updateMemberRole(memberId, role) {
+  return collaborationOnly(function () { return cloud.updateMemberRole(memberId, role) })
+}
+
+function removeMember(memberId) {
+  return collaborationOnly(function () { return cloud.removeMember(memberId) })
+}
+
+function createInvite(role, validHours) {
+  return collaborationOnly(function () { return cloud.createInvite(role, validHours) })
+}
+
+function getInvitePreview(token) {
+  return collaborationOnly(function () { return cloud.getInvitePreview(token) })
+}
+
+function acceptInvite(token) {
+  return collaborationOnly(function () {
+    return cloud.acceptInvite(token).then(function (session) {
+      if (session.company) local.cacheCompany(session.company)
+      return session
+    })
+  })
+}
+
+function getNotificationPreferences() {
+  return collaborationOnly(function () { return cloud.getNotificationPreferences() })
+}
+
+function saveNotificationPreferences(preferences) {
+  return collaborationOnly(function () { return cloud.saveNotificationPreferences(preferences) })
+}
+
 function getCompany() {
   return invoke(function () {
     return cloud.getCompany().then(function (company) {
@@ -108,6 +179,36 @@ function saveReport(report) {
     })
   }, function () {
     const saved = local.saveReport(report)
+    saved._exists = true
+    return saved
+  })
+}
+
+
+function submitReport(month, expectedVersion) {
+  return invoke(function () {
+    return cloud.submitReport(month, expectedVersion).then(function (result) {
+      if (result.report) local.cacheReport(result.report)
+      return result
+    }).catch(function (error) {
+      if (error && error.code === 'REPORT_INVALID') return { success: false, validation: error.details }
+      throw error
+    })
+  }, function () {
+    const result = local.submitReport(month)
+    if (result.report) result.report._exists = true
+    return result
+  })
+}
+
+function returnReport(month, expectedVersion, reason) {
+  return invoke(function () {
+    return cloud.returnReport(month, expectedVersion, reason).then(function (saved) {
+      local.cacheReport(saved)
+      return saved
+    })
+  }, function () {
+    const saved = local.returnReport(month, reason)
     saved._exists = true
     return saved
   })
@@ -226,6 +327,16 @@ function getStatus() {
 }
 
 module.exports = {
+  getSession: getSession,
+  saveUserProfile: saveUserProfile,
+  listMembers: listMembers,
+  updateMemberRole: updateMemberRole,
+  removeMember: removeMember,
+  createInvite: createInvite,
+  getInvitePreview: getInvitePreview,
+  acceptInvite: acceptInvite,
+  getNotificationPreferences: getNotificationPreferences,
+  saveNotificationPreferences: saveNotificationPreferences,
   getCompany: getCompany,
   saveCompany: saveCompany,
   getActiveMonth: getActiveMonth,
@@ -233,6 +344,8 @@ module.exports = {
   getReport: getReport,
   listReports: listReports,
   saveReport: saveReport,
+  submitReport: submitReport,
+  returnReport: returnReport,
   confirmReport: confirmReport,
   reopenReport: reopenReport,
   copyPreviousMonth: copyPreviousMonth,

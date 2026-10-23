@@ -4,7 +4,12 @@
     "pages/add/add",
     "pages/stats/stats",
     "pages/profile/profile",
-    "pages/setup/setup"
+    "pages/setup/setup",
+    "pages/user-profile/user-profile",
+    "pages/members/members",
+    "pages/invite-create/invite-create",
+    "pages/invite-join/invite-join",
+    "pages/notifications/notifications"
   ],
   "window": {
     "navigationBarBackgroundColor": "#3157D5",

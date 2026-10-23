@@ -11,12 +11,16 @@ Page({
     cloudModeText: '云端模式',
     cloudEnvId: '',
     cloudError: '',
-    checkingCloud: false
+    checkingCloud: false,
+    user: {},
+    userInitial: '微',
+    roleLabel: ''
   },
 
   onShow: async function () {
     try {
-      const company = await repository.getCompany()
+      const session = await repository.getSession()
+      const company = session.company
       if (!company) {
         wx.redirectTo({ url: '/pages/setup/setup' })
         return
@@ -25,6 +29,9 @@ Page({
       this.updateCloudStatus()
       this.setData({
         company: company,
+        user: session.user || {},
+        userInitial: String(session.user && session.user.displayName || '微').slice(0, 1),
+        roleLabel: session.membership && session.membership.roleLabel || '',
         companyInitial: String(company.name || '财').slice(0, 1),
         reportCount: reports.length,
         confirmedCount: reports.filter(function (item) { return item.status === 'confirmed' }).length,
@@ -63,6 +70,19 @@ Page({
     } finally {
       this.setData({ checkingCloud: false })
     }
+  },
+
+
+  onUserProfile: function () {
+    wx.navigateTo({ url: '/pages/user-profile/user-profile' })
+  },
+
+  onMembers: function () {
+    wx.navigateTo({ url: '/pages/members/members' })
+  },
+
+  onNotifications: function () {
+    wx.navigateTo({ url: '/pages/notifications/notifications' })
   },
 
   onEditCompany: function () {

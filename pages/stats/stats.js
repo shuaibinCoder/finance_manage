@@ -52,7 +52,7 @@ Page({
       canPrev: month > this.company.startMonth,
       canNext: month < reportUtils.currentMonth(),
       status: report.status,
-      statusText: report.status === 'confirmed' ? '已确认' : '未确认',
+      statusText: { draft: '填写中', returned: '已退回', pending_confirmation: '待确认', confirmed: '已确认' }[report.status] || '未确认',
       hasData: Boolean(report._exists),
       balanceGroups: this.buildBalanceGroups(report),
       balanceTotals: {

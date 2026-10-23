@@ -4,7 +4,7 @@
       <text class="company-name">{{companyName}}</text>
       <text class="company-subtitle">企业经营月报</text>
     </view>
-    <view class="status-pill {{status === 'confirmed' ? 'confirmed' : ''}}">{{statusText}}</view>
+    <view class="status-pill {{status === 'confirmed' ? 'confirmed' : (status === 'pending_confirmation' ? 'pending' : (status === 'returned' ? 'returned' : ''))}}">{{statusText}}</view>
   </view>
 
   <view class="month-bar">

@@ -79,3 +79,13 @@ scroll-view {
   color: #d9485f;
   background: #fff0f2;
 }
+
+.status-pill.pending {
+  color: #3157d5;
+  background: #edf1ff;
+}
+
+.status-pill.returned {
+  color: #9a6912;
+  background: #fff6dd;
+}

@@ -3,7 +3,7 @@
     <view class="month-arrow {{canPrev ? '' : 'disabled'}}" bindtap="onPrevMonth">‹</view>
     <view class="month-center">
       <text class="month-text">{{monthLabel}}</text>
-      <view class="status-pill {{status === 'confirmed' ? 'confirmed' : ''}}">{{statusText}}</view>
+      <view class="status-pill {{status === 'confirmed' ? 'confirmed' : (status === 'pending_confirmation' ? 'pending' : (status === 'returned' ? 'returned' : ''))}}">{{statusText}}</view>
     </view>
     <view class="month-arrow {{canNext ? '' : 'disabled'}}" bindtap="onNextMonth">›</view>
   </view>
@@ -16,9 +16,19 @@
     <view class="copy-link {{readonly ? 'disabled-link' : ''}}" bindtap="onCopyPrevious">复制上月</view>
   </view>
 
-  <view class="locked-tip" wx:if="{{readonly}}">
+  <view class="workflow-tip returned-tip" wx:if="{{status === 'returned'}}">
+    <text class="workflow-title">月报已退回修改</text>
+    <text class="workflow-desc">{{returnReason}}</text>
+  </view>
+
+  <view class="workflow-tip pending-tip" wx:if="{{status === 'pending_confirmation'}}">
+    <text class="workflow-title">等待老板确认</text>
+    <text class="workflow-desc">财务数据已锁定，老板可确认或退回修改。</text>
+  </view>
+
+  <view class="locked-tip" wx:if="{{status === 'confirmed'}}">
     <text>本月月报已确认，当前为只读状态</text>
-    <text class="unlock-link" bindtap="onReopen">撤销确认</text>
+    <text class="unlock-link" wx:if="{{canReopen}}" bindtap="onReopen">撤销确认</text>
   </view>
 
   <view class="summary-card card">
@@ -109,13 +119,18 @@
     </view>
   </view>
 
-  <view class="bottom-actions" wx:if="{{!readonly}}">
+  <view class="bottom-actions" wx:if="{{canEdit}}">
     <view class="btn-secondary bottom-btn" bindtap="onSave">{{saving ? '保存中…' : '保存草稿'}}</view>
-    <view class="btn-primary bottom-btn" bindtap="onConfirm">检查并确认</view>
+    <view class="btn-primary bottom-btn" bindtap="onSubmit">提交老板确认</view>
+  </view>
+
+  <view class="bottom-actions" wx:elif="{{canApprove}}">
+    <view class="btn-danger bottom-btn" bindtap="onReturn">退回修改</view>
+    <view class="btn-primary bottom-btn" bindtap="onApprove">确认月报</view>
   </view>
 
   <view class="bottom-actions" wx:else>
-    <view class="btn-secondary bottom-btn" bindtap="onReopen">撤销确认</view>
+    <view class="btn-secondary bottom-btn" wx:if="{{canReopen}}" bindtap="onReopen">撤销确认</view>
     <view class="btn-primary bottom-btn" bindtap="onViewReports">查看报表</view>
   </view>
 </view>

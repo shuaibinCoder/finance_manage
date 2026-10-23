@@ -5,6 +5,7 @@ const STORAGE_KEY = 'financial_report_mvp_v1'
 function defaultState() {
   return {
     version: 1,
+    user: { displayName: '微信用户', avatarFileId: '', profileCompleted: false },
     company: null,
     activeMonth: reportUtils.currentMonth(),
     reports: {}
@@ -26,6 +27,55 @@ function getState() {
 function saveState(state) {
   wx.setStorageSync(STORAGE_KEY, state)
   return state
+}
+
+
+function getUser() {
+  return getState().user || { displayName: '微信用户', avatarFileId: '', profileCompleted: false }
+}
+
+
+function cacheUser(user) {
+  const state = getState()
+  state.user = user ? Object.assign({}, user) : getUser()
+  saveState(state)
+  return state.user
+}
+
+function saveUserProfile(profile) {
+  const state = getState()
+  state.user = Object.assign({}, getUser(), profile, { profileCompleted: true, updatedAt: Date.now() })
+  saveState(state)
+  return state.user
+}
+
+function getSession() {
+  const state = getState()
+  return {
+    user: state.user || getUser(),
+    company: state.company,
+    membership: state.company ? {
+      id: 'local_owner',
+      companyId: state.company.id,
+      role: 'owner',
+      roleLabel: '企业管理员',
+      status: 'active'
+    } : null
+  }
+}
+
+function listMembers() {
+  const session = getSession()
+  if (!session.company) return []
+  return [{
+    id: 'local_owner',
+    displayName: session.user.displayName || '微信用户',
+    avatarFileId: session.user.avatarFileId || '',
+    role: 'owner',
+    roleLabel: '企业管理员',
+    isSelf: true,
+    joinedAt: session.company.createdAt || Date.now()
+  }]
 }
 
 function getCompany() {
@@ -110,10 +160,36 @@ function saveReport(report) {
   return next
 }
 
+function submitReport(month) {
+  const report = getReport(month)
+  const validation = reportUtils.validateReport(report)
+  if (!validation.valid) return { success: false, validation: validation }
+  if (report.status !== 'draft' && report.status !== 'returned') {
+    return { success: false, validation: validation, message: '当前状态不能提交' }
+  }
+  report.status = 'pending_confirmation'
+  report.submittedAt = Date.now()
+  report.returnReason = ''
+  const saved = saveReport(report)
+  return { success: true, report: saved, validation: validation }
+}
+
+function returnReport(month, reason) {
+  const report = getReport(month)
+  if (report.status !== 'pending_confirmation') throw new Error('只有待确认月报可以退回')
+  report.status = 'returned'
+  report.returnReason = String(reason || '').trim()
+  report.returnedAt = Date.now()
+  return saveReport(report)
+}
+
 function confirmReport(month) {
   const report = getReport(month)
   const validation = reportUtils.validateReport(report)
   if (!validation.valid) return { success: false, validation: validation }
+  if (report.status !== 'pending_confirmation') {
+    return { success: false, validation: validation, message: '只有待确认月报可以确认' }
+  }
   report.status = 'confirmed'
   report.confirmedAt = Date.now()
   const saved = saveReport(report)
@@ -246,6 +322,11 @@ function seedDemoData() {
 
 module.exports = {
   getState: getState,
+  getUser: getUser,
+  cacheUser: cacheUser,
+  saveUserProfile: saveUserProfile,
+  getSession: getSession,
+  listMembers: listMembers,
   getCompany: getCompany,
   setCompany: setCompany,
   cacheCompany: cacheCompany,
@@ -255,6 +336,8 @@ module.exports = {
   setActiveMonth: setActiveMonth,
   getReport: getReport,
   saveReport: saveReport,
+  submitReport: submitReport,
+  returnReport: returnReport,
   confirmReport: confirmReport,
   reopenReport: reopenReport,
   copyPreviousMonth: copyPreviousMonth,

@@ -1,0 +1,19 @@
+.page { min-height: 100vh; padding: 26rpx 24rpx 70rpx; }
+.summary { padding: 28rpx; display: flex; align-items: center; justify-content: space-between; }
+.summary-title, .summary-desc { display: block; }
+.summary-title { font-size: 31rpx; font-weight: 700; }
+.summary-desc { margin-top: 7rpx; color: #949bad; font-size: 22rpx; }
+.invite-button { padding: 15rpx 22rpx; color: #fff; border-radius: 17rpx; background: #3157d5; font-size: 24rpx; }
+.member-list { margin-top: 22rpx; padding: 0 28rpx; }
+.member-row { min-height: 118rpx; display: flex; align-items: center; border-bottom: 2rpx solid #f0f2f7; }
+.member-row:last-child { border-bottom: none; }
+.avatar { width: 72rpx; height: 72rpx; flex-shrink: 0; border-radius: 20rpx; }
+.avatar-empty { display: flex; align-items: center; justify-content: center; color: #3157d5; font-weight: 700; background: #edf1ff; }
+.member-copy { flex: 1; margin-left: 20rpx; }
+.member-name-row { display: flex; align-items: center; }
+.member-name { font-size: 28rpx; font-weight: 600; }
+.self-tag { margin-left: 12rpx; padding: 3rpx 10rpx; color: #3157d5; font-size: 19rpx; border-radius: 10rpx; background: #edf1ff; }
+.member-role { display: block; margin-top: 7rpx; color: #9299aa; font-size: 22rpx; }
+.member-arrow { color: #b5bac5; font-size: 40rpx; }
+.role-card { margin-top: 22rpx; padding: 28rpx; display: flex; flex-direction: column; color: #7a8396; font-size: 23rpx; line-height: 1.9; }
+.role-title { margin-bottom: 6rpx; color: #172033; font-size: 27rpx; font-weight: 650; }

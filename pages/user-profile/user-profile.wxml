@@ -1,0 +1,26 @@
+<view class="page">
+  <view class="profile-card card">
+    <button class="avatar-button" open-type="chooseAvatar" bindchooseavatar="onChooseAvatar">
+      <image class="avatar" wx:if="{{avatarPreview}}" src="{{avatarPreview}}" mode="aspectFill"></image>
+      <view class="avatar avatar-empty" wx:else>选择头像</view>
+    </button>
+    <text class="avatar-tip">点击更换企业协作头像</text>
+  </view>
+
+  <view class="form-card card">
+    <view class="field-row">
+      <text class="field-label">成员姓名</text>
+      <input class="field-input" type="nickname" maxlength="20" value="{{displayName}}" placeholder="例如：李会计、王总" bindinput="onNameInput" />
+    </view>
+    <view class="field-row">
+      <text class="field-label">当前角色</text>
+      <text class="field-value">{{roleLabel}}</text>
+    </view>
+  </view>
+
+  <view class="tip-card">
+    头像和姓名仅用于企业内部识别，不会自动读取或公开你的微信昵称。
+  </view>
+
+  <view class="btn-primary save-btn" bindtap="onSave">{{saving ? '保存中…' : '保存资料'}}</view>
+</view>
