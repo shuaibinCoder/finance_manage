@@ -203,14 +203,14 @@ function submitReport(month, expectedVersion) {
 
 function returnReport(month, expectedVersion, reason) {
   return invoke(function () {
-    return cloud.returnReport(month, expectedVersion, reason).then(function (saved) {
-      local.cacheReport(saved)
-      return saved
+    return cloud.returnReport(month, expectedVersion, reason).then(function (result) {
+      local.cacheReport(result.report)
+      return result
     })
   }, function () {
     const saved = local.returnReport(month, reason)
     saved._exists = true
-    return saved
+    return { report: saved, notification: null }
   })
 }
 
@@ -228,6 +228,7 @@ function confirmReport(month, expectedVersion) {
   }, function () {
     const result = local.confirmReport(month)
     if (result.report) result.report._exists = true
+    result.notification = null
     return result
   })
 }

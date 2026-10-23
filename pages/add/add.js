@@ -191,7 +191,11 @@ Page({
       if (!result.success) throw new Error('月报校验未通过')
       this.report = result.report
       await this.loadMonth(this.data.month)
-      wx.showToast({ title: '月报已确认', icon: 'success' })
+      const notification = result.notification
+      wx.showToast({
+        title: notification && notification.sent > 0 ? '已确认并通知财务' : '月报已确认',
+        icon: 'none'
+      })
     } catch (error) {
       wx.showToast({ title: error.message || '确认失败', icon: 'none' })
     } finally {
@@ -211,9 +215,13 @@ Page({
       success: async function (result) {
         if (!result.confirm) return
         try {
-          page.report = await repository.returnReport(page.data.month, page.report.version, result.content)
+          const returned = await repository.returnReport(page.data.month, page.report.version, result.content)
+          page.report = returned.report
           await page.loadMonth(page.data.month)
-          wx.showToast({ title: '已退回修改', icon: 'success' })
+          wx.showToast({
+            title: returned.notification && returned.notification.sent > 0 ? '已退回并通知财务' : '已退回修改',
+            icon: 'none'
+          })
         } catch (error) {
           wx.showToast({ title: error.message || '退回失败', icon: 'none' })
         }

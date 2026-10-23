@@ -1,7 +1,16 @@
+const TODO_TEMPLATE_ID = 'jktcPoH8S6Y8OQ2WzI_3vi-8ezkoic-Sz03wFytT4Ew'
+
 module.exports = {
   reportPending: {
-    templateId: 'jktcPoH8S6Y8OQ2WzI_3vi-8ezkoic-Sz03wFytT4Ew',
-    // 开发版联调使用 developer；小程序正式发布前改为 formal 并重新部署云函数。
+    templateId: TODO_TEMPLATE_ID,
+    miniprogramState: 'developer'
+  },
+  reportReturned: {
+    templateId: TODO_TEMPLATE_ID,
+    miniprogramState: 'developer'
+  },
+  reportConfirmed: {
+    templateId: TODO_TEMPLATE_ID,
     miniprogramState: 'developer'
   }
 }

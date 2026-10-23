@@ -441,17 +441,37 @@ async function recordNotificationFailure(openid, key, error) {
   })
 }
 
-async function sendReportPendingNotifications(company, report, submitter) {
-  const template = subscriptionConfig.reportPending
-  if (!template || !template.templateId) return { sent: 0, skipped: 0, failed: 0 }
-
-  const memberResult = await db.collection(COLLECTIONS.members)
-    .where({ companyId: company._id })
+async function getNotificationRecipients(companyId, roles, explicitOpenids, actorOpenid) {
+  const roleList = roles || []
+  const explicitMap = {}
+  ;(explicitOpenids || []).forEach(function (openid) {
+    if (openid) explicitMap[openid] = true
+  })
+  const result = await db.collection(COLLECTIONS.members)
+    .where({ companyId: companyId })
     .limit(100)
     .get()
-  const members = (memberResult.data || []).filter(function (member) {
-    return member.status === 'active' && (member.role === 'owner' || member.role === 'boss')
+  const seen = {}
+  return (result.data || []).filter(function (member) {
+    if (member.status !== 'active' || !member.openid || member.openid === actorOpenid) return false
+    if (roleList.indexOf(member.role) < 0 && !explicitMap[member.openid]) return false
+    if (seen[member.openid]) return false
+    seen[member.openid] = true
+    return true
   })
+}
+
+async function sendReportNotifications(options) {
+  const key = options.key
+  const template = subscriptionConfig[key]
+  if (!template || !template.templateId) return { sent: 0, skipped: 0, failed: 0 }
+
+  const members = await getNotificationRecipients(
+    options.company._id,
+    options.roles,
+    options.explicitOpenids,
+    options.actorOpenid
+  )
 
   let sent = 0
   let skipped = 0
@@ -461,34 +481,43 @@ async function sendReportPendingNotifications(company, report, submitter) {
     const preference = await getDocument(COLLECTIONS.notifications, member.openid)
     const grants = preference && preference.grants || {}
     const preferences = preference && preference.preferences || {}
-    if (preferences.reportPending !== 'accept' || Number(grants.reportPending || 0) < 1) {
+    if (preferences[key] !== 'accept' || Number(grants[key] || 0) < 1) {
       skipped++
       continue
     }
     try {
       const result = await cloud.openapi.subscribeMessage.send({
         touser: member.openid,
-        page: 'pages/add/add?month=' + encodeURIComponent(report.month),
+        page: 'pages/add/add?month=' + encodeURIComponent(options.report.month),
         lang: 'zh_CN',
         miniprogramState: template.miniprogramState || 'formal',
         templateId: template.templateId,
         data: {
-          thing28: { value: truncateText(company.name, 20) },
-          thing1: { value: truncateText(reportUtils.monthLabel(report.month) + '财务月报待确认', 20) },
-          time2: { value: formatSubscribeTime(report.submittedAt) },
-          thing12: { value: '请及时查看并确认月报' },
-          thing14: { value: truncateText(submitter && submitter.displayName || '财务人员', 20) }
+          thing28: { value: truncateText(options.company.name, 20) },
+          thing1: { value: truncateText(options.subject, 20) },
+          time2: { value: formatSubscribeTime(options.eventTime) },
+          thing12: { value: truncateText(options.note, 20) },
+          thing14: { value: truncateText(options.actor && options.actor.displayName || options.actorFallback || '企业成员', 20) }
         }
       })
-      await consumeNotificationGrant(member.openid, 'reportPending', result)
+      await consumeNotificationGrant(member.openid, key, result)
       sent++
     } catch (error) {
-      console.error('send report pending subscription failed', member.openid, error)
-      await recordNotificationFailure(member.openid, 'reportPending', error)
+      console.error('send subscription failed', key, member.openid, error)
+      await recordNotificationFailure(member.openid, key, error)
       failed++
     }
   }
   return { sent: sent, skipped: skipped, failed: failed }
+}
+
+async function safelySendReportNotifications(options) {
+  try {
+    return await sendReportNotifications(options)
+  } catch (error) {
+    console.error('report workflow succeeded but notification dispatch failed', options.key, error)
+    return { sent: 0, skipped: 0, failed: 1 }
+  }
 }
 
 async function saveNotificationPreferences(openid, preferences) {
@@ -671,13 +700,19 @@ async function submitReport(openid, month, expectedVersion) {
   })
   await addAudit(company._id, openid, 'REPORT_SUBMIT', reportId, existing, updated)
   const submitter = await getDocument(COLLECTIONS.users, openid)
-  let notification = { sent: 0, skipped: 0, failed: 0 }
-  try {
-    notification = await sendReportPendingNotifications(company, updated, submitter)
-  } catch (error) {
-    console.error('report submitted but pending notification dispatch failed', error)
-    notification = { sent: 0, skipped: 0, failed: 1 }
-  }
+  const notification = await safelySendReportNotifications({
+    key: 'reportPending',
+    company: company,
+    report: updated,
+    roles: ['owner', 'boss'],
+    explicitOpenids: [],
+    actorOpenid: openid,
+    actor: submitter,
+    actorFallback: '财务人员',
+    subject: reportUtils.monthLabel(updated.month) + '财务月报待确认',
+    note: '请及时查看并确认月报',
+    eventTime: updated.submittedAt
+  })
   return { report: updated, validation: validation, notification: notification }
 }
 
@@ -717,7 +752,21 @@ async function returnReport(openid, month, expectedVersion, reason) {
     }
   })
   await addAudit(company._id, openid, 'REPORT_RETURN', reportId, existing, updated)
-  return updated
+  const actor = await getDocument(COLLECTIONS.users, openid)
+  const notification = await safelySendReportNotifications({
+    key: 'reportReturned',
+    company: company,
+    report: updated,
+    roles: ['finance'],
+    explicitOpenids: [existing.submittedBy],
+    actorOpenid: openid,
+    actor: actor,
+    actorFallback: '审批人员',
+    subject: reportUtils.monthLabel(updated.month) + '财务月报已退回',
+    note: cleanReason,
+    eventTime: updated.returnedAt
+  })
+  return { report: updated, notification: notification }
 }
 
 async function confirmReport(openid, month, expectedVersion) {
@@ -754,7 +803,21 @@ async function confirmReport(openid, month, expectedVersion) {
     }
   })
   await addAudit(company._id, openid, 'REPORT_CONFIRM', reportId, existing, updated)
-  return { report: updated, validation: validation }
+  const actor = await getDocument(COLLECTIONS.users, openid)
+  const notification = await safelySendReportNotifications({
+    key: 'reportConfirmed',
+    company: company,
+    report: updated,
+    roles: ['finance'],
+    explicitOpenids: [existing.submittedBy],
+    actorOpenid: openid,
+    actor: actor,
+    actorFallback: '审批人员',
+    subject: reportUtils.monthLabel(updated.month) + '财务月报已确认',
+    note: '月报已确认并完成归档',
+    eventTime: updated.confirmedAt
+  })
+  return { report: updated, validation: validation, notification: notification }
 }
 
 async function reopenReport(openid, month, expectedVersion) {

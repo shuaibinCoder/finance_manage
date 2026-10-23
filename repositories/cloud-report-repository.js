@@ -143,7 +143,12 @@ function submitReport(month, expectedVersion) {
 
 function returnReport(month, expectedVersion, reason) {
   return call('returnReport', { month: month, expectedVersion: expectedVersion, reason: reason })
-    .then(function (saved) { return normalizeReport(saved, month) })
+    .then(function (result) {
+      return {
+        report: normalizeReport(result.report, month),
+        notification: result.notification || null
+      }
+    })
 }
 
 function confirmReport(month, expectedVersion) {
@@ -152,7 +157,8 @@ function confirmReport(month, expectedVersion) {
       return {
         success: true,
         report: normalizeReport(result.report, month),
-        validation: result.validation
+        validation: result.validation,
+        notification: result.notification || null
       }
     })
 }
