@@ -1,4 +1,4 @@
-const store = require('../../utils/store')
+const repository = require('../../repositories/report-repository')
 const reportUtils = require('../../utils/report')
 
 Page({
@@ -12,8 +12,8 @@ Page({
     saving: false
   },
 
-  onLoad: function (options) {
-    const company = store.getCompany()
+  onLoad: async function (options) {
+    const company = await repository.getCompany()
     const mode = options && options.mode === 'edit' ? 'edit' : 'create'
     let industryIndex = 0
     if (company && company.industry) {
@@ -41,7 +41,7 @@ Page({
     this.setData({ startMonth: event.detail.value })
   },
 
-  onSave: function () {
+  onSave: async function () {
     if (this.data.saving) return
     const name = String(this.data.name || '').trim()
     if (!name) {
@@ -50,7 +50,7 @@ Page({
     }
     this.setData({ saving: true })
     try {
-      store.setCompany({
+      await repository.saveCompany({
         name: name,
         industry: this.data.industries[this.data.industryIndex],
         startMonth: this.data.startMonth
@@ -63,7 +63,7 @@ Page({
       }, 400)
     } catch (error) {
       this.setData({ saving: false })
-      wx.showToast({ title: '保存失败，请重试', icon: 'none' })
+      wx.showToast({ title: error.message || '保存失败，请重试', icon: 'none' })
     }
   }
 })

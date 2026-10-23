@@ -1,4 +1,4 @@
-const store = require('../../utils/store')
+const repository = require('../../repositories/report-repository')
 const reportUtils = require('../../utils/report')
 
 Page({
@@ -14,31 +14,37 @@ Page({
     metrics: {},
     warningList: [],
     trend: [],
-    trendMax: 1
+    loading: true
   },
 
-  onShow: function () {
-    if (!this.ensureCompany()) return
-    this.refresh()
-  },
-
-  ensureCompany: function () {
-    const company = store.getCompany()
-    if (!company) {
-      wx.redirectTo({ url: '/pages/setup/setup' })
-      return false
+  onShow: async function () {
+    this.setData({ loading: true })
+    try {
+      const company = await repository.getCompany()
+      if (!company) {
+        wx.redirectTo({ url: '/pages/setup/setup' })
+        return
+      }
+      this.company = company
+      await this.refresh()
+    } catch (error) {
+      this.setData({ loading: false })
+      wx.showToast({ title: error.message || '数据加载失败', icon: 'none' })
     }
-    return true
   },
 
-  refresh: function () {
-    const company = store.getCompany()
-    const month = store.getActiveMonth() || reportUtils.currentMonth()
-    const report = store.getReport(month)
+  refresh: async function () {
+    const company = this.company || await repository.getCompany()
+    const month = repository.getActiveMonth() || reportUtils.currentMonth()
+    const results = await Promise.all([
+      repository.getReport(month),
+      repository.listReports()
+    ])
+    const report = results[0]
+    const reports = results[1]
     const validation = reportUtils.validateReport(report)
     const metrics = validation.metrics
-    const hasData = store.hasReport(month)
-    const trend = this.buildTrend(month)
+    const hasData = Boolean(report._exists)
 
     this.setData({
       companyName: company.name,
@@ -61,42 +67,41 @@ Page({
         debtRatio: metrics.debtRatio
       },
       warningList: hasData ? validation.errors.concat(validation.warnings).slice(0, 3) : [],
-      trend: trend.items,
-      trendMax: trend.max
+      trend: this.buildTrend(month, reports),
+      loading: false
     })
   },
 
-  buildTrend: function (month) {
+  buildTrend: function (month, reports) {
+    const reportMap = {}
+    ;(reports || []).forEach(function (report) { reportMap[report.month] = report })
     const raw = []
     let max = 1
     for (let index = 5; index >= 0; index--) {
       const itemMonth = reportUtils.shiftMonth(month, -index)
-      const report = store.getReport(itemMonth)
+      const report = reportMap[itemMonth] || reportUtils.createEmptyReport(itemMonth)
       const profit = reportUtils.calculateProfit(report.profit)
       max = Math.max(max, Math.abs(profit.revenue), Math.abs(profit.netProfit))
       raw.push({ month: itemMonth, revenue: profit.revenue, netProfit: profit.netProfit })
     }
-    return {
-      max: max,
-      items: raw.map(function (item) {
-        return {
-          month: item.month,
-          label: Number(item.month.split('-')[1]) + '月',
-          revenueText: reportUtils.formatCompactMoney(item.revenue),
-          profitText: reportUtils.formatCompactMoney(item.netProfit),
-          revenueHeight: item.revenue ? Math.max(Math.abs(item.revenue) / max * 100, 4) + '%' : '0%',
-          profitHeight: item.netProfit ? Math.max(Math.abs(item.netProfit) / max * 100, 4) + '%' : '0%'
-        }
-      })
-    }
+    return raw.map(function (item) {
+      return {
+        month: item.month,
+        label: Number(item.month.split('-')[1]) + '月',
+        revenueText: reportUtils.formatCompactMoney(item.revenue),
+        profitText: reportUtils.formatCompactMoney(item.netProfit),
+        revenueHeight: item.revenue ? Math.max(Math.abs(item.revenue) / max * 100, 4) + '%' : '0%',
+        profitHeight: item.netProfit ? Math.max(Math.abs(item.netProfit) / max * 100, 4) + '%' : '0%'
+      }
+    })
   },
 
-  changeMonth: function (delta) {
+  changeMonth: async function (delta) {
     const next = reportUtils.shiftMonth(this.data.month, delta)
-    const company = store.getCompany()
+    const company = this.company
     if (next > reportUtils.currentMonth() || next < company.startMonth) return
-    store.setActiveMonth(next)
-    this.refresh()
+    repository.setActiveMonth(next)
+    await this.refresh()
   },
 
   onPrevMonth: function () {

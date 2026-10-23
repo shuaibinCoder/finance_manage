@@ -35,11 +35,41 @@ function getCompany() {
 function setCompany(company) {
   const state = getState()
   state.company = Object.assign({}, state.company || {}, company, {
-    id: (state.company && state.company.id) || 'company_' + Date.now(),
+    id: company.id || (state.company && state.company.id) || 'company_' + Date.now(),
     updatedAt: Date.now()
   })
   saveState(state)
   return state.company
+}
+
+
+function cacheCompany(company) {
+  const state = getState()
+  state.company = company ? Object.assign({}, company) : null
+  saveState(state)
+  return state.company
+}
+
+function cacheReport(report) {
+  if (!report || !report.month) return report
+  const state = getState()
+  const cached = Object.assign({}, report)
+  delete cached._exists
+  state.reports[report.month] = cached
+  saveState(state)
+  return report
+}
+
+function cacheReports(reports) {
+  const state = getState()
+  ;(reports || []).forEach(function (report) {
+    if (!report || !report.month) return
+    const cached = Object.assign({}, report)
+    delete cached._exists
+    state.reports[report.month] = cached
+  })
+  saveState(state)
+  return reports
 }
 
 function getActiveMonth() {
@@ -218,6 +248,9 @@ module.exports = {
   getState: getState,
   getCompany: getCompany,
   setCompany: setCompany,
+  cacheCompany: cacheCompany,
+  cacheReport: cacheReport,
+  cacheReports: cacheReports,
   getActiveMonth: getActiveMonth,
   setActiveMonth: setActiveMonth,
   getReport: getReport,

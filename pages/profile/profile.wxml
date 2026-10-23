@@ -8,6 +8,22 @@
     <view class="edit-link" bindtap="onEditCompany">编辑</view>
   </view>
 
+
+  <view class="cloud-card card">
+    <view class="cloud-head">
+      <view class="cloud-status-block">
+        <view class="cloud-dot {{cloudMode === 'cloud' ? 'online' : 'offline'}}"></view>
+        <view>
+          <text class="cloud-title">{{cloudModeText}}</text>
+          <text class="cloud-env">{{cloudEnvId}}</text>
+        </view>
+      </view>
+      <view class="check-cloud" bindtap="onCheckCloud">{{checkingCloud ? '检测中…' : '检测连接'}}</view>
+    </view>
+    <text class="cloud-error" wx:if="{{cloudError}}">{{cloudError}}</text>
+    <text class="cloud-tip" wx:else>企业和月报数据优先保存到云端，本机保留缓存和离线兜底。</text>
+  </view>
+
   <view class="stats-card card">
     <view class="stat-item">
       <text class="stat-value">{{reportCount}}</text>
@@ -64,8 +80,8 @@
   </view>
 
   <view class="notice-card">
-    <text class="notice-title">当前为本地MVP版本</text>
-    <text class="notice-content">数据仅保存在当前微信设备中。正式商用前需要接入云端数据库、自动备份、多成员权限、Excel导入和服务端报表导出。</text>
+    <text class="notice-title">云端 Repository 说明</text>
+    <text class="notice-content">当前版本已接入 CloudBase Repository。云端不可用时会自动切换到本地兜底模式；云函数部署并创建数据库集合后，可启用跨设备云端数据。</text>
   </view>
 
   <view class="version">小微财报 MVP 1.0</view>

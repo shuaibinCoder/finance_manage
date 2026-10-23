@@ -40,8 +40,8 @@
   </view>
 
   <view class="privacy-tip">
-    <text class="privacy-title">MVP 数据说明</text>
-    <text>当前版本的数据保存在本机，用于产品验证。正式商用版需接入云端数据库、成员权限和自动备份。</text>
+    <text class="privacy-title">数据存储说明</text>
+    <text>系统优先保存到 CloudBase 云端；如果环境不可用，将自动切换到本机存储，后续可重新检测并迁移。</text>
   </view>
 
   <view class="btn-primary save-btn" bindtap="onSave">{{saving ? '保存中…' : '保存并开始'}}</view>

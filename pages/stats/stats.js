@@ -1,4 +1,4 @@
-const store = require('../../utils/store')
+const repository = require('../../repositories/report-repository')
 const reportUtils = require('../../utils/report')
 
 Page({
@@ -17,31 +17,43 @@ Page({
     analysisCards: [],
     alerts: [],
     trend: [],
-    hasData: false
+    hasData: false,
+    loading: true
   },
 
-  onShow: function () {
-    if (!store.getCompany()) {
-      wx.redirectTo({ url: '/pages/setup/setup' })
-      return
+  onShow: async function () {
+    this.setData({ loading: true })
+    try {
+      this.company = await repository.getCompany()
+      if (!this.company) {
+        wx.redirectTo({ url: '/pages/setup/setup' })
+        return
+      }
+      await this.refresh()
+    } catch (error) {
+      this.setData({ loading: false })
+      wx.showToast({ title: error.message || '报表加载失败', icon: 'none' })
     }
-    this.refresh()
   },
 
-  refresh: function () {
-    const month = store.getActiveMonth()
-    const company = store.getCompany()
-    const report = store.getReport(month)
+  refresh: async function () {
+    const month = repository.getActiveMonth()
+    const results = await Promise.all([
+      repository.getReport(month),
+      repository.listReports()
+    ])
+    const report = results[0]
+    const reports = results[1]
     const validation = reportUtils.validateReport(report)
     const metrics = validation.metrics
     this.setData({
       month: month,
       monthLabel: reportUtils.monthLabel(month),
-      canPrev: month > company.startMonth,
+      canPrev: month > this.company.startMonth,
       canNext: month < reportUtils.currentMonth(),
       status: report.status,
       statusText: report.status === 'confirmed' ? '已确认' : '未确认',
-      hasData: store.hasReport(month),
+      hasData: Boolean(report._exists),
       balanceGroups: this.buildBalanceGroups(report),
       balanceTotals: {
         assets: this.money(metrics.balance.assets),
@@ -62,7 +74,8 @@ Page({
       },
       analysisCards: this.buildAnalysisCards(report, metrics),
       alerts: validation.errors.concat(validation.warnings),
-      trend: this.buildTrend(month)
+      trend: this.buildTrend(month, reports),
+      loading: false
     })
   },
 
@@ -112,12 +125,14 @@ Page({
     ]
   },
 
-  buildTrend: function (month) {
+  buildTrend: function (month, reports) {
+    const reportMap = {}
+    ;(reports || []).forEach(function (report) { reportMap[report.month] = report })
     const values = []
     let max = 1
     for (let index = 5; index >= 0; index--) {
       const itemMonth = reportUtils.shiftMonth(month, -index)
-      const report = store.getReport(itemMonth)
+      const report = reportMap[itemMonth] || reportUtils.createEmptyReport(itemMonth)
       const profit = reportUtils.calculateProfit(report.profit)
       max = Math.max(max, Math.abs(profit.revenue), Math.abs(profit.netProfit))
       values.push({ month: itemMonth, revenue: profit.revenue, profit: profit.netProfit })
@@ -136,12 +151,11 @@ Page({
     this.setData({ activeTab: event.currentTarget.dataset.tab })
   },
 
-  changeMonth: function (delta) {
+  changeMonth: async function (delta) {
     const next = reportUtils.shiftMonth(this.data.month, delta)
-    const company = store.getCompany()
-    if (next > reportUtils.currentMonth() || next < company.startMonth) return
-    store.setActiveMonth(next)
-    this.refresh()
+    if (next > reportUtils.currentMonth() || next < this.company.startMonth) return
+    repository.setActiveMonth(next)
+    await this.refresh()
   },
 
   onPrevMonth: function () {
